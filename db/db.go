@@ -24,7 +24,10 @@ func StartDbSessionAndCreateQueries(host string) (Queries, error) {
 
 	fmt.Println("Connected to Database!")
 
-	queries := NewQueries(session)
+	queries, err := NewQueries(session)
+	if err != nil {
+		return nil, nil
+	}
 	queries.CreateTablesIfNotExist()
 
 	return queries, nil

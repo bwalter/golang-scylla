@@ -1,3 +1,5 @@
+// TODO: generated...
+
 package test
 
 import (

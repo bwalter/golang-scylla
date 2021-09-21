@@ -1,30 +1,40 @@
 package db
 
 import (
+	"fmt"
+	"strings"
+
 	"bwa.com/hello/model"
 	"github.com/gocql/gocql"
+	"github.com/scylladb/gocqlx/v2"
 )
 
 type ScyllaQueries struct {
-	session gocql.Session
+	session *gocqlx.Session
 }
 
-func NewQueries(session *gocql.Session) Queries {
-	return &ScyllaQueries{
-		session: *session,
+func NewQueries(session *gocql.Session) (Queries, error) {
+	sessionx, err := gocqlx.WrapSession(session, nil)
+	if err != nil {
+		return nil, err
 	}
+
+	return &ScyllaQueries{
+		session: &sessionx,
+	}, nil
 }
 
 func (queries *ScyllaQueries) CreateTablesIfNotExist() error {
-	if err := queries.session.Query("CREATE KEYSPACE IF NOT EXISTS hello WITH REPLICATION = {'class' : 'SimpleStrategy', 'replication_factor' : 1}").Exec(); err != nil {
+	if err := queries.session.ExecStmt("CREATE KEYSPACE IF NOT EXISTS hello WITH REPLICATION = {'class' : 'SimpleStrategy', 'replication_factor' : 1}"); err != nil {
 		return err
 	}
 
-	if err := queries.session.Query("CREATE TYPE IF NOT EXISTS ev_data (battery_capacity_in_kwh int, soc_in_percent int)").Exec(); err != nil {
+	if err := queries.session.ExecStmt("CREATE TYPE IF NOT EXISTS ev_data (battery_capacity_in_kwh int, soc_in_percent int)"); err != nil {
 		return err
 	}
 
-	if err := queries.session.Query("CREATE TABLE IF NOT EXISTS vehicles (vin text primary key, engine_type text, ev_data ev_data)").Exec(); err != nil {
+	cql := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (%s)", vehicleMetadata.Name, strings.Join(vehicleMetadata.Columns, ","))
+	if err := queries.session.ExecStmt(cql); err != nil {
 		return err
 	}
 
@@ -32,16 +42,31 @@ func (queries *ScyllaQueries) CreateTablesIfNotExist() error {
 }
 
 func (queries *ScyllaQueries) CreateVehicle(vehicle model.Vehicle) error {
-	if err := queries.session.Query("INSERT INTO vehicles (vin, engine_type, ev_data) VALUES (?, ?, ?) IF NOT EXISTS", &vehicle.Vin, &vehicle.Engine, &vehicle.EvData).Exec(); err != nil {
+	scylla_vehicle, err := NewScyllaVehicle(vehicle)
+	if err != nil {
 		return err
+	}
+
+	q := queries.session.Query(vehicleTable.InsertBuilder().Unique().ToCql()).BindStruct(scylla_vehicle)
+	applied, err := q.ExecCASRelease()
+	if err != nil {
+		return err
+	}
+
+	if !applied {
+		return gocql.RequestErrAlreadyExists{}
 	}
 
 	return nil
 }
 
 func (queries *ScyllaQueries) FindVehicle(vin string) (*model.Vehicle, error) {
-	var vehicle model.Vehicle
-	if err := queries.session.Query("SELECT * FROM vehicles WHERE vin = ?", vin).Scan(&vehicle.Vin, &vehicle.Engine, &vehicle.EvData); err != nil {
+	q := queries.session.Query(vehicleTable.Get()).BindStruct(&ScyllaVehicle{
+		Vin: vin,
+	})
+
+	scylla_vehicle := ScyllaVehicle{}
+	if err := q.GetRelease(&scylla_vehicle); err != nil {
 		if err == gocql.ErrNotFound {
 			return nil, nil
 		}
@@ -49,5 +74,10 @@ func (queries *ScyllaQueries) FindVehicle(vin string) (*model.Vehicle, error) {
 		return nil, err
 	}
 
-	return &vehicle, nil
+	vehicle, err := scylla_vehicle.ToModelVehicle()
+	if err != nil {
+		return nil, err
+	}
+
+	return &vehicle, err
 }
