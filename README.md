@@ -14,8 +14,14 @@ docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' hell
 ### Build and run demo app
 
 ```
-$ go build
-$ ./hello --addr <scylla_ip_addr>
+$ make
+$ ./bin/hello --addr <scylla_ip_addr>
+```
+
+### Unit tests
+
+```
+$ make test
 ```
 
 ### Test Rest API

@@ -63,7 +63,7 @@ func (a *App) findVehicle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if vehicle == nil {
-		helpers.RespondWithJSON(w, 404, vin)
+		helpers.RespondWithJSON(w, 404, map[string]string{"vin": vin})
 		return
 	}
 
