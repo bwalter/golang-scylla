@@ -25,7 +25,21 @@ func NewApp(queries db.Queries) App {
 		queries: queries,
 	}
 
+	// CreateVehicle handler
+	// @summary Create a new vehicle.
+	// @desc Create a new vehicle.
+	// @produce json
+	// @success 201 {json}
+	// @failure 500 {json}
 	r.HandleFunc("/vehicle", a.createVehicle).Methods("POST")
+
+	// FindVehicle handler
+	// @summary Get vehicle info.
+	// @desc Get info of a vehicle with the given VIN.
+	// @produce json
+	// @success 200 {json} OK
+	// @failure 404 {string} The vehicle was not found
+	// @failure 500 {json}
 	r.HandleFunc("/vehicle", a.findVehicle).Methods("GET")
 
 	return a
