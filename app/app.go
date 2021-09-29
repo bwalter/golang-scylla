@@ -29,8 +29,7 @@ func NewApp(queries db.Queries) App {
 	// @summary Create a new vehicle.
 	// @desc Create a new vehicle.
 	// @produce json
-	// @success 200 {json} OK
-	// @success 201 {json}
+	// @success 201 {json} CREATED
 	// @failure 500 {json}
 	r.HandleFunc("/vehicle", a.createVehicle).Methods("POST")
 
