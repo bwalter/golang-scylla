@@ -78,6 +78,7 @@ func TestPostVehicle(t *testing.T) {
 
 	// Check vehicle
 	vehicle_ptr, err := queries.FindVehicle("vin1")
+	require.NoError(t, err)
 	require.NotNil(t, vehicle_ptr)
 	require.Equal(t, vehicle, *vehicle_ptr)
 }

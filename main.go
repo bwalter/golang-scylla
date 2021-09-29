@@ -64,7 +64,9 @@ func main() {
 	}
 
 	fmt.Printf("Listening to %s:%d...\n", opts.Addr, opts.Port)
-	srv.ListenAndServe()
+	if err = srv.ListenAndServe(); err != nil {
+		panic(err)
+	}
 
 	// Close session
 	a.CloseSession()

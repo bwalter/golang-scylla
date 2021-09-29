@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -17,22 +18,24 @@ func NewErrorObject(error string) ErrorObject {
 }
 
 // => (code: <code> body: error JSON)
-func RespondWithError(w http.ResponseWriter, code int, message string) error {
-	return RespondWithJSON(w, code, ErrorObject{Error: message})
+func RespondWithError(w http.ResponseWriter, code int, message string) {
+	RespondWithJSON(w, code, ErrorObject{Error: message})
 }
 
 // => (code: <code> body: payload JSON)
-func RespondWithJSON(w http.ResponseWriter, code int, payload interface{}) error {
+func RespondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	response, err := json.Marshal(payload)
 	if err != nil {
-		return err
+		fmt.Printf("ERROR: Could not respond: %v\n", err.Error())
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
-	w.Write(response)
-
-	return nil
+	if _, err = w.Write(response); err != nil {
+		fmt.Printf("ERROR: Could not respond: %v\n", err.Error())
+		return
+	}
 }
 
 func DecodeJSONBody(body io.Reader, v interface{}) error {

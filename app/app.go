@@ -46,7 +46,7 @@ func NewApp(queries db.Queries) App {
 }
 
 func (a *App) CloseSession() {
-	a.CloseSession()
+	a.queries.CloseSession()
 }
 
 // POST (body: vehicle JSON) => (200 body: vehicle JSON) or (500 body: vehicle JSON)
@@ -70,7 +70,7 @@ func (a *App) createVehicle(w http.ResponseWriter, r *http.Request) {
 func (a *App) findVehicle(w http.ResponseWriter, r *http.Request) {
 	vins := r.URL.Query()["vin"]
 	if vins == nil {
-		helpers.RespondWithError(w, 500, fmt.Sprintf("Could not find vehicle (missing 'vin' query parameter)"))
+		helpers.RespondWithError(w, 500, "Could not find vehicle (missing 'vin' query parameter)")
 		return
 	}
 
