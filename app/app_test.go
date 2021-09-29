@@ -12,7 +12,7 @@ import (
 	"bwa.com/hello/mock"
 	"bwa.com/hello/model"
 	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var mock_queries *mock.MockQueries
@@ -43,24 +43,24 @@ func TestPostVehicle(t *testing.T) {
 	// Vehicle JSON
 	vehicle := model.Vehicle{Vin: "vin1", EngineType: "Combustion"}
 	vehicle_json, err := json.Marshal(vehicle)
-	checkError(t, err)
+	require.NoError(t, err)
 
 	// Expect DB CreateVehicle
 	mock_queries.EXPECT().CreateVehicle(gomock.Eq(vehicle)).Return(nil)
 
 	// Send POST request
 	req, err := http.NewRequest("POST", "/vehicle", bytes.NewBuffer(vehicle_json))
-	checkError(t, err)
+	require.NoError(t, err)
 	rr := httptest.NewRecorder()
 	app.Router.ServeHTTP(rr, req)
 
 	// Check code
-	assert.Equal(t, 201, rr.Code)
+	require.Equal(t, 201, rr.Code)
 
 	// Check body
 	var response_vehicle model.Vehicle
 	helpers.DecodeJSONBody(rr.Body, &response_vehicle)
-	assert.Equal(t, vehicle, response_vehicle)
+	require.Equal(t, vehicle, response_vehicle)
 }
 
 // POST vehicle => InternalError
@@ -71,24 +71,24 @@ func TestPostVehicleInternalError(t *testing.T) {
 	// Vehicle JSON
 	vehicle := model.Vehicle{Vin: "vin1", EngineType: "Combustion"}
 	vehicle_json, err := json.Marshal(vehicle)
-	checkError(t, err)
+	require.NoError(t, err)
 
 	// Expect DB CreateVehicle
 	mock_queries.EXPECT().CreateVehicle(gomock.Eq(vehicle)).Return(errors.New("test CreateVehicle error"))
 
 	// Send POST request
 	req, err := http.NewRequest("POST", "/vehicle", bytes.NewBuffer(vehicle_json))
-	checkError(t, err)
+	require.NoError(t, err)
 	rr := httptest.NewRecorder()
 	app.Router.ServeHTTP(rr, req)
 
 	// Check code
-	assert.Equal(t, 500, rr.Code)
+	require.Equal(t, 500, rr.Code)
 
 	// Check body
 	var response_error helpers.ErrorObject
 	helpers.DecodeJSONBody(rr.Body, &response_error)
-	assert.Equal(t, helpers.NewErrorObject("Could not create vehicle: test CreateVehicle error"), response_error)
+	require.Equal(t, helpers.NewErrorObject("Could not create vehicle: test CreateVehicle error"), response_error)
 }
 
 // GET vehicle => OK
@@ -102,17 +102,17 @@ func TestGetVehicle(t *testing.T) {
 
 	// Send GET request
 	req, err := http.NewRequest("GET", "/vehicle?vin=vin1", nil)
-	checkError(t, err)
+	require.NoError(t, err)
 	rr := httptest.NewRecorder()
 	app.Router.ServeHTTP(rr, req)
 
 	// Check code
-	assert.Equal(t, 200, rr.Code)
+	require.Equal(t, 200, rr.Code)
 
 	// Check body
 	var response_vehicle model.Vehicle
 	helpers.DecodeJSONBody(rr.Body, &response_vehicle)
-	assert.Equal(t, vehicle, response_vehicle)
+	require.Equal(t, vehicle, response_vehicle)
 }
 
 // GET vehicle => NotFound
@@ -125,17 +125,17 @@ func TestGetVehicleNotFound(t *testing.T) {
 
 	// Send GET request
 	req, err := http.NewRequest("GET", "/vehicle?vin=wrong", nil)
-	checkError(t, err)
+	require.NoError(t, err)
 	rr := httptest.NewRecorder()
 	app.Router.ServeHTTP(rr, req)
 
 	// Check code
-	assert.Equal(t, 404, rr.Code)
+	require.Equal(t, 404, rr.Code)
 
 	// Check body
 	var response map[string]string
 	helpers.DecodeJSONBody(rr.Body, &response)
-	assert.Equal(t, map[string]string{"vin": "wrong"}, response)
+	require.Equal(t, map[string]string{"vin": "wrong"}, response)
 }
 
 // GET vehicle => InternalError
@@ -148,23 +148,15 @@ func TestGetVehicleInternalError(t *testing.T) {
 
 	// Send GET request
 	req, err := http.NewRequest("GET", "/vehicle?vin=vin1", nil)
-	checkError(t, err)
+	require.NoError(t, err)
 	rr := httptest.NewRecorder()
 	app.Router.ServeHTTP(rr, req)
 
 	// Check code
-	assert.Equal(t, 500, rr.Code)
+	require.Equal(t, 500, rr.Code)
 
 	// Check body
 	var response_error helpers.ErrorObject
 	helpers.DecodeJSONBody(rr.Body, &response_error)
-	assert.Equal(t, helpers.NewErrorObject("Could not find vehicle: test FindVehicle error"), response_error)
-}
-
-func checkError(t *testing.T, err error) {
-	if err == nil {
-		return
-	}
-
-	t.Errorf("Err: %v", err)
+	require.Equal(t, helpers.NewErrorObject("Could not find vehicle: test FindVehicle error"), response_error)
 }

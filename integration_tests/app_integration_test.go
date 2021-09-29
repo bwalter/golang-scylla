@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"runtime"
 	"testing"
 
 	"bwa.com/hello/app"
@@ -34,11 +33,11 @@ func setUp(t *testing.T) {
 
 	// Create test keyspace
 	err := db.CreateScyllaKeyspace(host, keyspace, true)
-	checkError(t, err)
+	require.NoError(t, err)
 
 	// Start session
 	q, err := db.StartScyllaSessionAndCreateQueries(host, keyspace)
-	checkError(t, err)
+	require.NoError(t, err)
 	queries = q
 
 	// App
@@ -60,11 +59,11 @@ func TestPostVehicle(t *testing.T) {
 	// Vehicle JSON
 	vehicle := model.Vehicle{Vin: "vin1", EngineType: "Combustion"}
 	vehicle_json, err := json.Marshal(vehicle)
-	checkError(t, err)
+	require.NoError(t, err)
 
 	// Send POST request
 	req, err := http.NewRequest("POST", "/vehicle", bytes.NewBuffer(vehicle_json))
-	checkError(t, err)
+	require.NoError(t, err)
 	rr := httptest.NewRecorder()
 	a.Router.ServeHTTP(rr, req)
 
@@ -82,7 +81,7 @@ func TestPostVehicle(t *testing.T) {
 	require.Equal(t, vehicle, *vehicle_ptr)
 }
 
-// GET vehicle => OK
+// GET /vehicle => OK
 func TestGetVehicle(t *testing.T) {
 	setUp(t)
 	defer tearDown(t)
@@ -94,7 +93,7 @@ func TestGetVehicle(t *testing.T) {
 	// Insert vehicle
 	vehicle := model.Vehicle{Vin: "vin1", EngineType: "Combustion"}
 	err := queries.CreateVehicle(vehicle)
-	checkError(t, err)
+	require.NoError(t, err)
 
 	// Send GET request => OK
 	rr = handleRequest(t, "GET", "/vehicle?vin=vin1")
@@ -108,17 +107,8 @@ func TestGetVehicle(t *testing.T) {
 
 func handleRequest(t *testing.T, method string, path string) httptest.ResponseRecorder {
 	req, err := http.NewRequest("GET", "/vehicle?vin=vin1", nil)
-	checkError(t, err)
+	require.NoError(t, err)
 	rr := httptest.NewRecorder()
 	a.Router.ServeHTTP(rr, req)
 	return *rr
-}
-
-func checkError(t *testing.T, err error) {
-	if err == nil {
-		return
-	}
-
-	_, fn, line, _ := runtime.Caller(1)
-	log.Fatalf("Error %s:%d %v", fn, line, err)
 }
