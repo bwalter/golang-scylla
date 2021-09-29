@@ -1,4 +1,4 @@
-package main
+package app
 
 import (
 	"bytes"
@@ -14,10 +14,6 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
-
-type error_object struct {
-	Error string
-}
 
 var mock_queries *mock.MockQueries
 var app App
@@ -59,12 +55,12 @@ func TestPostVehicle(t *testing.T) {
 	app.Router.ServeHTTP(rr, req)
 
 	// Check code
-	assert.Equal(t, rr.Code, 201)
+	assert.Equal(t, 201, rr.Code)
 
 	// Check body
 	var response_vehicle model.Vehicle
-	helpers.DecodeBodyToJSON(rr.Body, &response_vehicle)
-	assert.Equal(t, response_vehicle, vehicle)
+	helpers.DecodeJSONBody(rr.Body, &response_vehicle)
+	assert.Equal(t, vehicle, response_vehicle)
 }
 
 // POST vehicle => InternalError
@@ -87,12 +83,12 @@ func TestPostVehicleInternalError(t *testing.T) {
 	app.Router.ServeHTTP(rr, req)
 
 	// Check code
-	assert.Equal(t, rr.Code, 500)
+	assert.Equal(t, 500, rr.Code)
 
 	// Check body
-	var response_error error_object
-	helpers.DecodeBodyToJSON(rr.Body, &response_error)
-	assert.Equal(t, response_error, error_object{Error: "Could not create vehicle: test CreateVehicle error"})
+	var response_error helpers.ErrorObject
+	helpers.DecodeJSONBody(rr.Body, &response_error)
+	assert.Equal(t, helpers.NewErrorObject("Could not create vehicle: test CreateVehicle error"), response_error)
 }
 
 // GET vehicle => OK
@@ -111,12 +107,12 @@ func TestGetVehicle(t *testing.T) {
 	app.Router.ServeHTTP(rr, req)
 
 	// Check code
-	assert.Equal(t, rr.Code, 200)
+	assert.Equal(t, 200, rr.Code)
 
 	// Check body
 	var response_vehicle model.Vehicle
-	helpers.DecodeBodyToJSON(rr.Body, &response_vehicle)
-	assert.Equal(t, response_vehicle, vehicle)
+	helpers.DecodeJSONBody(rr.Body, &response_vehicle)
+	assert.Equal(t, vehicle, response_vehicle)
 }
 
 // GET vehicle => NotFound
@@ -134,12 +130,12 @@ func TestGetVehicleNotFound(t *testing.T) {
 	app.Router.ServeHTTP(rr, req)
 
 	// Check code
-	assert.Equal(t, rr.Code, 404)
+	assert.Equal(t, 404, rr.Code)
 
 	// Check body
 	var response map[string]string
-	helpers.DecodeBodyToJSON(rr.Body, &response)
-	assert.Equal(t, response, map[string]string{"vin": "wrong"})
+	helpers.DecodeJSONBody(rr.Body, &response)
+	assert.Equal(t, map[string]string{"vin": "wrong"}, response)
 }
 
 // GET vehicle => InternalError
@@ -157,12 +153,12 @@ func TestGetVehicleInternalError(t *testing.T) {
 	app.Router.ServeHTTP(rr, req)
 
 	// Check code
-	assert.Equal(t, rr.Code, 500)
+	assert.Equal(t, 500, rr.Code)
 
 	// Check body
-	var response_error error_object
-	helpers.DecodeBodyToJSON(rr.Body, &response_error)
-	assert.Equal(t, response_error, error_object{Error: "Could not find vehicle: test FindVehicle error"})
+	var response_error helpers.ErrorObject
+	helpers.DecodeJSONBody(rr.Body, &response_error)
+	assert.Equal(t, helpers.NewErrorObject("Could not find vehicle: test FindVehicle error"), response_error)
 }
 
 func checkError(t *testing.T, err error) {

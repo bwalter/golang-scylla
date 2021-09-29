@@ -1,15 +1,13 @@
 all: build
 
 clean:
-	rm -rf bin/*
+	@rm -rf bin/*
 
 dependencies:
-	go install
+	@go install
 
 build: dependencies
-	go build -o ./bin/hello
-
-ci: dependencies test
+	@go build -o ./bin/hello
 
 build-mocks:
 	@go install github.com/golang/mock/mockgen@v1.6.0
@@ -18,6 +16,11 @@ build-mocks:
 apidoc:
 	@~/go/bin/apidoc -m ./main.go -o docs
 
-test: build-mocks
-	go test . -v
+test: unit-tests integration-tests
+
+unit-tests: build-mocks
+	@go test ./app -v
+
+integration-tests:
+	@go test -cpu 1 -count=1 -v ./integration_tests
 

@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
+	"bwa.com/hello/app"
 	"bwa.com/hello/db"
 	"github.com/jessevdk/go-flags"
 )
@@ -24,9 +26,11 @@ import (
 // @ver 1.0
 // @server https://api.example.com/v1 Production API
 func main() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
 	// Command line args
 	var opts struct {
-		Addr string `short:"a" long:"addr" description:"hostname or address of the ScyllaDB node (e.g. 172.17.0.2)" required:"yes"`
+		Addr string `short:"a" long:"addr" description:"hostname or address of the ScyllaDB node (e.g. 172.17.0.2)" default:"localhost"`
 		Port int    `short:"p" long:"port" description:"port of the ScyllaDB node (default: 9042)" default:"9042"`
 	}
 	_, err := flags.ParseArgs(&opts, os.Args[1:])
@@ -34,19 +38,34 @@ func main() {
 		os.Exit(1)
 	}
 
-	// DB Queries
-	queries, err := db.StartDbSessionAndCreateQueries(fmt.Sprintf("%s:%d", opts.Addr, opts.Port))
+	// Host and keyspace
+	host := fmt.Sprintf("%s:%d", opts.Addr, opts.Port)
+	keyspace := "hello"
+
+	// Scylla Keyspace
+	err = db.CreateScyllaKeyspace(host, keyspace, false)
+	if err != nil {
+		panic(err)
+	}
+
+	// Queries
+	queries, err := db.StartScyllaSessionAndCreateQueries(host, keyspace)
 	if err != nil {
 		panic(err)
 	}
 
 	// App
-	a := NewApp(queries)
+	a := app.NewApp(queries)
 
 	// Server
 	srv := &http.Server{
 		Handler: a.Router,
 		Addr:    ":3001",
 	}
+
+	fmt.Printf("Listening to %s:%d...\n", opts.Addr, opts.Port)
 	srv.ListenAndServe()
+
+	// Close session
+	a.CloseSession()
 }

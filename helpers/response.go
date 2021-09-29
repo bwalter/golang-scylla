@@ -8,12 +8,20 @@ import (
 	"gopkg.in/go-playground/validator.v9"
 )
 
-// => (<code> body: error JSON)
-func RespondWithError(w http.ResponseWriter, code int, message string) {
-	RespondWithJSON(w, code, map[string]string{"error": message})
+type ErrorObject struct {
+	Error string `json:"error"`
 }
 
-// => (<code> body: payload JSON)
+func NewErrorObject(error string) ErrorObject {
+	return ErrorObject{Error: error}
+}
+
+// => (code: <code> body: error JSON)
+func RespondWithError(w http.ResponseWriter, code int, message string) {
+	RespondWithJSON(w, code, ErrorObject{Error: message})
+}
+
+// => (code: <code> body: payload JSON)
 func RespondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	response, _ := json.Marshal(payload)
 
@@ -22,7 +30,7 @@ func RespondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	w.Write(response)
 }
 
-func DecodeBodyToJSON(body io.Reader, v interface{}) error {
+func DecodeJSONBody(body io.Reader, v interface{}) error {
 	if err := json.NewDecoder(body).Decode(v); err != nil {
 		return err
 	}

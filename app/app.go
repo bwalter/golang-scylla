@@ -1,4 +1,4 @@
-package main
+package app
 
 import (
 	"bwa.com/hello/db"
@@ -29,6 +29,7 @@ func NewApp(queries db.Queries) App {
 	// @summary Create a new vehicle.
 	// @desc Create a new vehicle.
 	// @produce json
+	// @success 200 {json} OK
 	// @success 201 {json}
 	// @failure 500 {json}
 	r.HandleFunc("/vehicle", a.createVehicle).Methods("POST")
@@ -45,11 +46,15 @@ func NewApp(queries db.Queries) App {
 	return a
 }
 
+func (a *App) CloseSession() {
+	a.CloseSession()
+}
+
 // POST (body: vehicle JSON) => (200 body: vehicle JSON) or (500 body: vehicle JSON)
 func (a *App) createVehicle(w http.ResponseWriter, r *http.Request) {
 	var vehicle model.Vehicle
 
-	if err := helpers.DecodeBodyToJSON(r.Body, &vehicle); err != nil {
+	if err := helpers.DecodeJSONBody(r.Body, &vehicle); err != nil {
 		helpers.RespondWithError(w, 500, fmt.Sprintf("Could not decode vehicle: %s", err))
 		return
 	}

@@ -34,6 +34,18 @@ func (m *MockQueries) EXPECT() *MockQueriesMockRecorder {
 	return m.recorder
 }
 
+// CloseSession mocks base method.
+func (m *MockQueries) CloseSession() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "CloseSession")
+}
+
+// CloseSession indicates an expected call of CloseSession.
+func (mr *MockQueriesMockRecorder) CloseSession() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CloseSession", reflect.TypeOf((*MockQueries)(nil).CloseSession))
+}
+
 // CreateTablesIfNotExist mocks base method.
 func (m *MockQueries) CreateTablesIfNotExist() error {
 	m.ctrl.T.Helper()
