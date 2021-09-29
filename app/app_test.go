@@ -59,7 +59,8 @@ func TestPostVehicle(t *testing.T) {
 
 	// Check body
 	var response_vehicle model.Vehicle
-	helpers.DecodeJSONBody(rr.Body, &response_vehicle)
+	err = helpers.DecodeJSONBody(rr.Body, &response_vehicle)
+	require.NoError(t, err)
 	require.Equal(t, vehicle, response_vehicle)
 }
 
@@ -87,7 +88,8 @@ func TestPostVehicleInternalError(t *testing.T) {
 
 	// Check body
 	var response_error helpers.ErrorObject
-	helpers.DecodeJSONBody(rr.Body, &response_error)
+	err = helpers.DecodeJSONBody(rr.Body, &response_error)
+	require.NoError(t, err)
 	require.Equal(t, helpers.NewErrorObject("Could not create vehicle: test CreateVehicle error"), response_error)
 }
 
@@ -111,7 +113,8 @@ func TestGetVehicle(t *testing.T) {
 
 	// Check body
 	var response_vehicle model.Vehicle
-	helpers.DecodeJSONBody(rr.Body, &response_vehicle)
+	err = helpers.DecodeJSONBody(rr.Body, &response_vehicle)
+	require.NoError(t, err)
 	require.Equal(t, vehicle, response_vehicle)
 }
 
@@ -134,7 +137,8 @@ func TestGetVehicleNotFound(t *testing.T) {
 
 	// Check body
 	var response map[string]string
-	helpers.DecodeJSONBody(rr.Body, &response)
+	err = helpers.DecodeJSONBody(rr.Body, &response)
+	require.NoError(t, err)
 	require.Equal(t, map[string]string{"vin": "wrong"}, response)
 }
 
@@ -157,6 +161,7 @@ func TestGetVehicleInternalError(t *testing.T) {
 
 	// Check body
 	var response_error helpers.ErrorObject
-	helpers.DecodeJSONBody(rr.Body, &response_error)
+	err = helpers.DecodeJSONBody(rr.Body, &response_error)
+	require.NoError(t, err)
 	require.Equal(t, helpers.NewErrorObject("Could not find vehicle: test FindVehicle error"), response_error)
 }

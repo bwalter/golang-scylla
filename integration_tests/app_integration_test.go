@@ -72,7 +72,8 @@ func TestPostVehicle(t *testing.T) {
 
 	// Check body
 	var response_vehicle model.Vehicle
-	helpers.DecodeJSONBody(rr.Body, &response_vehicle)
+	err = helpers.DecodeJSONBody(rr.Body, &response_vehicle)
+	require.NoError(t, err)
 	require.Equal(t, vehicle, response_vehicle)
 
 	// Check vehicle
@@ -101,7 +102,8 @@ func TestGetVehicle(t *testing.T) {
 
 	// Check body
 	var response_vehicle model.Vehicle
-	helpers.DecodeJSONBody(rr.Body, &response_vehicle)
+	err = helpers.DecodeJSONBody(rr.Body, &response_vehicle)
+	require.NoError(t, err)
 	require.Equal(t, vehicle, response_vehicle)
 }
 

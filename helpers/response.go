@@ -17,22 +17,32 @@ func NewErrorObject(error string) ErrorObject {
 }
 
 // => (code: <code> body: error JSON)
-func RespondWithError(w http.ResponseWriter, code int, message string) {
-	RespondWithJSON(w, code, ErrorObject{Error: message})
+func RespondWithError(w http.ResponseWriter, code int, message string) error {
+	return RespondWithJSON(w, code, ErrorObject{Error: message})
 }
 
 // => (code: <code> body: payload JSON)
-func RespondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
-	response, _ := json.Marshal(payload)
+func RespondWithJSON(w http.ResponseWriter, code int, payload interface{}) error {
+	response, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	w.Write(response)
+
+	return nil
 }
 
 func DecodeJSONBody(body io.Reader, v interface{}) error {
 	if err := json.NewDecoder(body).Decode(v); err != nil {
 		return err
+	}
+
+	// Do not validate maps
+	if _, ok := v.(*map[string]string); ok {
+		return nil
 	}
 
 	validate := validator.New()
