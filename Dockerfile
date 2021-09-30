@@ -19,4 +19,4 @@ FROM alpine:3.14
 COPY --from=builder /tmp/hello-build/bin/hello /app/hello
 
 EXPOSE 3001
-CMD [/app/hello]
+CMD /app/hello
