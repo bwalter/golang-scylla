@@ -84,3 +84,7 @@ $ docker exec -it hello-scylla cqlsh
 cqlsh> USE hello;
 cqlsh:hello> SELECT * from vehicles;
 ```
+
+### Class diagram
+
+![classdiagram image](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.github.com/bwalter/golang-scylla/master/classdiagram.plantuml)

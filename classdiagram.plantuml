@@ -1,0 +1,55 @@
+@startuml Class diagram
+
+class HttpServer as "http.Server" {
+    + ListenAndServe()
+}
+
+class App {
+    + CloseSession()
+    - createVehicle()
+    - deleteVehicle()
+}
+class Router as "mux.Router" {
+    + HandleFunc(path: String, f: func)
+}
+
+interface Queries as "db.Queries" {
+	+ CreateTablesIfNotExist(): error
+	+ CloseSession()
+	+ CreateVehicle(vehicle: model.Vehicle): error
+	+ FindVehicle(vin: string): (*model.Vehicle, error)
+}
+
+class Vehicle as "model.Vehicle" {
+	+ Vin: string
+	+ EngineType: string
+	+ EvData: *EvData
+}
+
+class EvData as "model.EvData" {
+	BatteryCapacityInKwh: int
+	SocInPercent: int
+}
+
+Queries --> Vehicle
+Vehicle *-down-> EvData
+
+class ScyllaQueries as "db.ScyllaQueries"
+
+class ScyllaVehicle as "db.ScyllaVehicle" {
+    {static} + NewScyllaVehicle(v: model.Vehicle)
+    + ToModelVehicle(): Vehicle
+}
+
+ScyllaQueries .do.> ScyllaVehicle
+
+HttpServer -> Router
+
+App o-down-> Router
+App o-> Queries
+App ..> Vehicle
+Queries <|-- ScyllaQueries
+
+Router -[hidden]right- Queries
+
+@enduml
