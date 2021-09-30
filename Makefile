@@ -1,20 +1,27 @@
 all: build
 
+BIN = $(CURDIR)/bin
+
+ifndef GOBIN
+GOBIN := $(GOPATH)/bin
+endif
+
 clean:
-	@rm -rf bin/*
+	@rm -rf $(BIN)/*
 
 dependencies:
-	@go install
+	@GOBIN=$(GOBIN) go install
 
 build: dependencies
-	@go build -o ./bin/hello
+	@mkdir -p $(BIN)
+	@go build -o $(BIN)/hello
 
 build-mocks:
-	@go install github.com/golang/mock/mockgen@v1.6.0
-	@~/go/bin/mockgen -source=db/queries.go -destination=mock/queries.go -package=mock
+	@GOBIN=$(GOBIN) go install github.com/golang/mock/mockgen@v1.6.0
+	@$(GOBIN)/mockgen -source=db/queries.go -destination=mock/queries.go -package=mock
 
 apidoc:
-	@~/go/bin/apidoc -m ./main.go -o docs
+	@$(GOBIN)/apidoc -m ./main.go -o docs
 
 check:
 	@golangci-lint run
@@ -22,7 +29,7 @@ check:
 test: unit-tests integration-tests
 
 unit-tests: build-mocks
-	@go test ./app -v
+	@CGO_ENABLED="0" go test ./app -v
 
 integration-tests:
 	@go test -cpu 1 -count=1 -v ./integration_tests
