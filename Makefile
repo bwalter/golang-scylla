@@ -16,6 +16,9 @@ build-mocks:
 apidoc:
 	@~/go/bin/apidoc -m ./main.go -o docs
 
+check:
+	@golangci-lint run
+
 test: unit-tests integration-tests
 
 unit-tests: build-mocks

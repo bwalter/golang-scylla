@@ -1,6 +1,7 @@
 package db
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -10,7 +11,8 @@ import (
 )
 
 type ScyllaQueries struct {
-	session *gocqlx.Session
+	session  *gocqlx.Session
+	keyspace string
 }
 
 func CreateScyllaKeyspace(host string, keyspace string, deleteExisting bool) error {
@@ -48,7 +50,7 @@ func StartScyllaSessionAndCreateQueries(host string, keyspace string) (Queries, 
 		return nil, err
 	}
 
-	queries, err := newScyllaQueries(session)
+	queries, err := newScyllaQueries(session, keyspace)
 	if err != nil {
 		return nil, nil
 	}
@@ -60,14 +62,15 @@ func StartScyllaSessionAndCreateQueries(host string, keyspace string) (Queries, 
 	return queries, nil
 }
 
-func newScyllaQueries(session *gocql.Session) (Queries, error) {
+func newScyllaQueries(session *gocql.Session, keyspace string) (Queries, error) {
 	sessionx, err := gocqlx.WrapSession(session, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	return &ScyllaQueries{
-		session: &sessionx,
+		session:  &sessionx,
+		keyspace: keyspace,
 	}, nil
 }
 
@@ -89,38 +92,39 @@ func (queries *ScyllaQueries) CloseSession() {
 }
 
 func (queries *ScyllaQueries) CreateVehicle(vehicle model.Vehicle) error {
-	scylla_vehicle, err := NewScyllaVehicle(vehicle)
+	scyllaVehicle, err := NewScyllaVehicle(vehicle)
 	if err != nil {
 		return err
 	}
 
-	applied, err := queries.session.Query(vehicleTable.InsertBuilder().Unique().ToCql()).BindStruct(scylla_vehicle).ExecCAS()
+	applied, err := queries.session.Query(vehicleTable.InsertBuilder().Unique().ToCql()).BindStruct(scyllaVehicle).ExecCAS()
 	if err != nil {
 		return err
 	}
 
 	if !applied {
-		return gocql.RequestErrAlreadyExists{}
+		return gocql.RequestErrAlreadyExists{Keyspace: queries.keyspace, Table: "Vehicle"}
 	}
 
 	return nil
 }
 
 func (queries *ScyllaQueries) FindVehicle(vin string) (*model.Vehicle, error) {
-	q := queries.session.Query(vehicleTable.Get()).BindStruct(&ScyllaVehicle{
-		Vin: vin,
-	})
+	var findVehicle ScyllaVehicle
+	findVehicle.Vin = vin
 
-	scylla_vehicle := ScyllaVehicle{}
-	if err := q.GetRelease(&scylla_vehicle); err != nil {
-		if err == gocql.ErrNotFound {
+	q := queries.session.Query(vehicleTable.Get()).BindStruct(findVehicle)
+
+	var scyllaVehicle ScyllaVehicle
+	if err := q.GetRelease(&scyllaVehicle); err != nil {
+		if errors.Is(err, gocql.ErrNotFound) {
 			return nil, nil
 		}
 
 		return nil, err
 	}
 
-	vehicle, err := scylla_vehicle.ToModelVehicle()
+	vehicle, err := scyllaVehicle.ToModelVehicle()
 	if err != nil {
 		return nil, err
 	}

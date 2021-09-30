@@ -1,0 +1,21 @@
+run:
+  deadline: 5m
+  tests: true
+
+linters-settings:
+  errcheck:
+    check-blank: true
+
+  exhaustivestruct:
+      struct-patterns:
+        - 'http.Server'
+
+linters:
+  enable-all: false
+  enable:
+    - errcheck
+    - errorlint
+    - exhaustive
+    - exhaustivestruct
+    - gocritic
+    - revive

@@ -1,4 +1,4 @@
-package integration_tests
+package integrationTests
 
 import (
 	"bytes"
@@ -58,11 +58,11 @@ func TestPostVehicle(t *testing.T) {
 
 	// Vehicle JSON
 	vehicle := model.Vehicle{Vin: "vin1", EngineType: "Combustion"}
-	vehicle_json, err := json.Marshal(vehicle)
+	vehicleJSON, err := json.Marshal(vehicle)
 	require.NoError(t, err)
 
 	// Send POST request
-	req, err := http.NewRequest("POST", "/vehicle", bytes.NewBuffer(vehicle_json))
+	req, err := http.NewRequest("POST", "/vehicle", bytes.NewBuffer(vehicleJSON))
 	require.NoError(t, err)
 	rr := httptest.NewRecorder()
 	a.Router.ServeHTTP(rr, req)
@@ -71,16 +71,16 @@ func TestPostVehicle(t *testing.T) {
 	require.Equal(t, 201, rr.Code)
 
 	// Check body
-	var response_vehicle model.Vehicle
-	err = helpers.DecodeJSONBody(rr.Body, &response_vehicle)
+	var responseVehicle model.Vehicle
+	err = helpers.DecodeJSONBody(rr.Body, &responseVehicle)
 	require.NoError(t, err)
-	require.Equal(t, vehicle, response_vehicle)
+	require.Equal(t, vehicle, responseVehicle)
 
 	// Check vehicle
-	vehicle_ptr, err := queries.FindVehicle("vin1")
+	vehiclePtr, err := queries.FindVehicle("vin1")
 	require.NoError(t, err)
-	require.NotNil(t, vehicle_ptr)
-	require.Equal(t, vehicle, *vehicle_ptr)
+	require.NotNil(t, vehiclePtr)
+	require.Equal(t, vehicle, *vehiclePtr)
 }
 
 // GET /vehicle => OK
@@ -102,10 +102,10 @@ func TestGetVehicle(t *testing.T) {
 	require.Equal(t, 200, rr.Code)
 
 	// Check body
-	var response_vehicle model.Vehicle
-	err = helpers.DecodeJSONBody(rr.Body, &response_vehicle)
+	var responseVehicle model.Vehicle
+	err = helpers.DecodeJSONBody(rr.Body, &responseVehicle)
 	require.NoError(t, err)
-	require.Equal(t, vehicle, response_vehicle)
+	require.Equal(t, vehicle, responseVehicle)
 }
 
 func handleRequest(t *testing.T, method string, path string) httptest.ResponseRecorder {

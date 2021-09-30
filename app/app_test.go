@@ -15,17 +15,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var mock_queries *mock.MockQueries
+var mockQueries *mock.MockQueries
 var app App
 var srv *httptest.Server
 
 func setUp(t *testing.T) {
 	// Queries
 	ctrl := gomock.NewController(t)
-	mock_queries = mock.NewMockQueries(ctrl)
+	mockQueries = mock.NewMockQueries(ctrl)
 
 	// App
-	app = NewApp(mock_queries)
+	app = NewApp(mockQueries)
 
 	// Server
 	srv = httptest.NewServer(app.Router)
@@ -41,15 +41,15 @@ func TestPostVehicle(t *testing.T) {
 	defer tearDown()
 
 	// Vehicle JSON
-	vehicle := model.Vehicle{Vin: "vin1", EngineType: "Combustion"}
-	vehicle_json, err := json.Marshal(vehicle)
+	vehicle := model.Vehicle{Vin: "vin1", EngineType: "Combustion", EvData: nil}
+	vehicleJSON, err := json.Marshal(vehicle)
 	require.NoError(t, err)
 
 	// Expect DB CreateVehicle
-	mock_queries.EXPECT().CreateVehicle(gomock.Eq(vehicle)).Return(nil)
+	mockQueries.EXPECT().CreateVehicle(gomock.Eq(vehicle)).Return(nil)
 
 	// Send POST request
-	req, err := http.NewRequest("POST", "/vehicle", bytes.NewBuffer(vehicle_json))
+	req, err := http.NewRequest("POST", "/vehicle", bytes.NewBuffer(vehicleJSON))
 	require.NoError(t, err)
 	rr := httptest.NewRecorder()
 	app.Router.ServeHTTP(rr, req)
@@ -58,10 +58,10 @@ func TestPostVehicle(t *testing.T) {
 	require.Equal(t, 201, rr.Code)
 
 	// Check body
-	var response_vehicle model.Vehicle
-	err = helpers.DecodeJSONBody(rr.Body, &response_vehicle)
+	var responseVehicle model.Vehicle
+	err = helpers.DecodeJSONBody(rr.Body, &responseVehicle)
 	require.NoError(t, err)
-	require.Equal(t, vehicle, response_vehicle)
+	require.Equal(t, vehicle, responseVehicle)
 }
 
 // POST vehicle => InternalError
@@ -70,15 +70,15 @@ func TestPostVehicleInternalError(t *testing.T) {
 	defer tearDown()
 
 	// Vehicle JSON
-	vehicle := model.Vehicle{Vin: "vin1", EngineType: "Combustion"}
-	vehicle_json, err := json.Marshal(vehicle)
+	vehicle := model.Vehicle{Vin: "vin1", EngineType: "Combustion", EvData: nil}
+	vehicleJSON, err := json.Marshal(vehicle)
 	require.NoError(t, err)
 
 	// Expect DB CreateVehicle
-	mock_queries.EXPECT().CreateVehicle(gomock.Eq(vehicle)).Return(errors.New("test CreateVehicle error"))
+	mockQueries.EXPECT().CreateVehicle(gomock.Eq(vehicle)).Return(errors.New("test CreateVehicle error"))
 
 	// Send POST request
-	req, err := http.NewRequest("POST", "/vehicle", bytes.NewBuffer(vehicle_json))
+	req, err := http.NewRequest("POST", "/vehicle", bytes.NewBuffer(vehicleJSON))
 	require.NoError(t, err)
 	rr := httptest.NewRecorder()
 	app.Router.ServeHTTP(rr, req)
@@ -87,10 +87,10 @@ func TestPostVehicleInternalError(t *testing.T) {
 	require.Equal(t, 500, rr.Code)
 
 	// Check body
-	var response_error helpers.ErrorObject
-	err = helpers.DecodeJSONBody(rr.Body, &response_error)
+	var responseError helpers.ErrorObject
+	err = helpers.DecodeJSONBody(rr.Body, &responseError)
 	require.NoError(t, err)
-	require.Equal(t, helpers.NewErrorObject("Could not create vehicle: test CreateVehicle error"), response_error)
+	require.Equal(t, helpers.NewErrorObject("Could not create vehicle: test CreateVehicle error"), responseError)
 }
 
 // GET vehicle => OK
@@ -99,8 +99,8 @@ func TestGetVehicle(t *testing.T) {
 	defer tearDown()
 
 	// Expect DB FindVehicle
-	vehicle := model.Vehicle{Vin: "vin1", EngineType: "Combustion"}
-	mock_queries.EXPECT().FindVehicle(gomock.Eq("vin1")).Return(&vehicle, nil)
+	vehicle := model.Vehicle{Vin: "vin1", EngineType: "Combustion", EvData: nil}
+	mockQueries.EXPECT().FindVehicle(gomock.Eq("vin1")).Return(&vehicle, nil)
 
 	// Send GET request
 	req, err := http.NewRequest("GET", "/vehicle?vin=vin1", nil)
@@ -112,10 +112,10 @@ func TestGetVehicle(t *testing.T) {
 	require.Equal(t, 200, rr.Code)
 
 	// Check body
-	var response_vehicle model.Vehicle
-	err = helpers.DecodeJSONBody(rr.Body, &response_vehicle)
+	var responseVehicle model.Vehicle
+	err = helpers.DecodeJSONBody(rr.Body, &responseVehicle)
 	require.NoError(t, err)
-	require.Equal(t, vehicle, response_vehicle)
+	require.Equal(t, vehicle, responseVehicle)
 }
 
 // GET vehicle => NotFound
@@ -124,7 +124,7 @@ func TestGetVehicleNotFound(t *testing.T) {
 	defer tearDown()
 
 	// Expect DB FindVehicle
-	mock_queries.EXPECT().FindVehicle(gomock.Eq("wrong")).Return(nil, nil)
+	mockQueries.EXPECT().FindVehicle(gomock.Eq("wrong")).Return(nil, nil)
 
 	// Send GET request
 	req, err := http.NewRequest("GET", "/vehicle?vin=wrong", nil)
@@ -148,7 +148,7 @@ func TestGetVehicleInternalError(t *testing.T) {
 	defer tearDown()
 
 	// Expect DB FindVehicle
-	mock_queries.EXPECT().FindVehicle(gomock.Eq("vin1")).Return(nil, errors.New("test FindVehicle error"))
+	mockQueries.EXPECT().FindVehicle(gomock.Eq("vin1")).Return(nil, errors.New("test FindVehicle error"))
 
 	// Send GET request
 	req, err := http.NewRequest("GET", "/vehicle?vin=vin1", nil)
@@ -160,8 +160,8 @@ func TestGetVehicleInternalError(t *testing.T) {
 	require.Equal(t, 500, rr.Code)
 
 	// Check body
-	var response_error helpers.ErrorObject
-	err = helpers.DecodeJSONBody(rr.Body, &response_error)
+	var responseError helpers.ErrorObject
+	err = helpers.DecodeJSONBody(rr.Body, &responseError)
 	require.NoError(t, err)
-	require.Equal(t, helpers.NewErrorObject("Could not find vehicle: test FindVehicle error"), response_error)
+	require.Equal(t, helpers.NewErrorObject("Could not find vehicle: test FindVehicle error"), responseError)
 }

@@ -10,6 +10,7 @@ var vehicleMetadata = table.Metadata{
 	Name:    "vehicles",
 	Columns: []string{"vin", "engine_type", "ev_data"},
 	PartKey: []string{"vin"},
+	SortKey: []string{},
 }
 
 var vehicleTable = table.New(vehicleMetadata)
@@ -28,9 +29,9 @@ type EvDataUDT struct {
 }
 
 func NewScyllaVehicle(vehicle model.Vehicle) (ScyllaVehicle, error) {
-	var ev_data_udt EvDataUDT
+	var evDataUDT EvDataUDT
 	if vehicle.EvData != nil {
-		ev_data_udt = EvDataUDT{
+		evDataUDT = EvDataUDT{
 			BatteryCapacityInKwh: vehicle.EvData.BatteryCapacityInKwh,
 			SocInPercent:         vehicle.EvData.SocInPercent,
 		}
@@ -39,14 +40,14 @@ func NewScyllaVehicle(vehicle model.Vehicle) (ScyllaVehicle, error) {
 	return ScyllaVehicle{
 		Vin:        vehicle.Vin,
 		EngineType: vehicle.EngineType,
-		EvData:     ev_data_udt,
+		EvData:     evDataUDT,
 	}, nil
 }
 
 func (sv *ScyllaVehicle) ToModelVehicle() (model.Vehicle, error) {
-	var ev_data_ptr *model.EvData
+	var evDataPtr *model.EvData
 	if sv.EvData.BatteryCapacityInKwh > 0 {
-		ev_data_ptr = &model.EvData{
+		evDataPtr = &model.EvData{
 			BatteryCapacityInKwh: sv.EvData.BatteryCapacityInKwh,
 			SocInPercent:         sv.EvData.SocInPercent,
 		}
@@ -55,6 +56,6 @@ func (sv *ScyllaVehicle) ToModelVehicle() (model.Vehicle, error) {
 	return model.Vehicle{
 		Vin:        sv.Vin,
 		EngineType: sv.EngineType,
-		EvData:     ev_data_ptr,
+		EvData:     evDataPtr,
 	}, nil
 }
