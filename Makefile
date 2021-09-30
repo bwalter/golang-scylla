@@ -2,6 +2,10 @@ all: build
 
 BIN = $(CURDIR)/bin
 
+ifndef GOPATH
+GOPATH := $(HOME)/bin
+endif
+
 ifndef GOBIN
 GOBIN := $(GOPATH)/bin
 endif
@@ -21,6 +25,7 @@ build-mocks:
 	@$(GOBIN)/mockgen -source=db/queries.go -destination=mock/queries.go -package=mock
 
 apidoc:
+	@GOBIN=$(GOBIN) go install github.com/spaceavocado/apidoc@v0.3.5
 	@$(GOBIN)/apidoc -m ./main.go -o docs
 
 check:
