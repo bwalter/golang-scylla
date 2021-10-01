@@ -6,6 +6,12 @@ User features:
 - Rest API to create and find vehicles
 - Persistent storage in database
 
+Rest API:
+```
+POST /vehicle, request body: vehicle JSON => OK
+GET /vehicle?vin=<vin> => OK + response body: vehicle JSON  or  NOT_FOUND
+```
+
 Libraries/tools:
 - HTTP server (based on net/http), see main.go
 - Basic routing (based on [gorilla/mux](https://github.com/gorilla/mux)), see app/app.go
