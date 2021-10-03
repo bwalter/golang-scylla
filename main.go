@@ -63,7 +63,7 @@ func main() {
 		Addr:    ":3001",
 	}
 
-	fmt.Printf("Listening to %s:%d...\n", opts.Addr, opts.Port)
+	fmt.Printf("Listening to %s:%d...\n", "localhost", 3001)
 	if err = srv.ListenAndServe(); err != nil {
 		panic(err)
 	}

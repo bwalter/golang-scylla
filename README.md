@@ -30,7 +30,7 @@ Continuous integration:
 ### Start Scylla DB using Docker
 
 ```
-$ docker run --name hello-scylla -d -p 9042:9042 scylladb/scylla
+$ docker run -p 3001:3001 --link=hello-scylla:scylla -it hello-app -a scylla
 ```
 
 ### Build and run demo app
