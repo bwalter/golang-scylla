@@ -2,35 +2,42 @@
 
 Useless, (almost) production-ready demo web application.
 
-User features:
-- Rest API to create and find vehicles
+Features:
+- Rest API to create, find and delete vehicles
 - Persistent storage in database
 
-Rest API:
-```
-POST /vehicle, request body: vehicle JSON => OK
-GET /vehicle?vin=<vin> => OK + response body: vehicle JSON  or  NOT_FOUND
-```
+### Software Design
 
-Libraries/tools:
+#### Architecture:
+
+![architecture image](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.github.com/bwalter/golang-scylla/master/diagrams/architecture.plantuml)
+
+#### Libraries/tools:
 - HTTP server (based on net/http), see main.go
 - Basic routing (based on [gorilla/mux](https://github.com/gorilla/mux)), see app/app.go
 - [Scylla](https://www.scylladb.com) database with [gocql](https://github.com/scylladb/gocql) driver and [gocqlx](https://github.com/scylladb/gocqlx) extension
-- OpenAPI generation based on [apidoc](https://github.com/spaceavocado/apidoc), see Makefile ('apidoc' target), comments in main.go and app/app.go
+- (Basic) OpenAPI generation based on [apidoc](https://github.com/spaceavocado/apidoc), see Makefile ('apidoc' target), comments in main.go and app/app.go
 - JSON validation based on [validator](https://github.com/go-playground/validator)
 - Command line arguments parsing based on [go-flags](https://github.com/jessevdk/go-flags)
 - Unit tests based on [testify](https://github.com/stretchr/testify)/require and [mockgen](https://github.com/golang/mock), see app/app_test.go and Makefile ('unit-tests' target)
 - Integration test using httptest, see integration_tests/app_integration_test.go and Makefile ('integration-tets' target)
 - Linting based on [golangci-lint](https://golangci-lint.run/), see Makefile ('check' target) and .golangci.yaml
 
-Continuous integration:
+#### Continuous integration:
 - Github actions, see .github/workflows/go.yml
 - Docker image generation, see Dockerfile
+
+#### Missing:
+- Authentication
+- i18n
+
+#### Class diagram:
+![classdiagram image](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.github.com/bwalter/golang-scylla/master/diagrams/classdiagram.plantuml)
 
 ### Start Scylla DB using Docker
 
 ```
-$ docker run -p 3001:3001 --link=hello-scylla:scylla -it hello-app -a scylla
+$ docker run -p 3001:3001 --link=hello-scylla:scylla -it hello-app --addr scylla
 ```
 
 ### Build and run demo app
@@ -42,10 +49,16 @@ $ make
 $ ./bin/hello
 ```
 
-or using Docker:
+Via docker:
 ```
 $ docker build -t hello-app .
-$ docker run -p 3001:3001 -it hello-app --link=hello-scylla
+$ docker run -t -i -p 3001:3001 --link=hello-scylla -it hello-app  --addr scylla
+```
+
+Via docker-compose:
+```
+$ docker-compose build
+$ docker-compose up
 ```
 
 ### Tests
@@ -77,7 +90,7 @@ $ curl -v -H "Accept: application/json" -H "Content-type: application/json" loca
 $ curl -v -H "Accept: application/json" -H "Content-type: application/json" localhost:3001/vehicle -d '{"vin":"vin3","engine":"Phev"}}'
 ```
 
-Find vehicles by vin:
+Find vehicle by vin:
 ```
 $ curl -v -H "Accept: application/json" -H "Content-type: application/json" localhost:3001/vehicle -G --data-urlencode 'vin=vin2'
 ```
@@ -90,7 +103,3 @@ $ docker exec -it hello-scylla cqlsh
 cqlsh> USE hello;
 cqlsh:hello> SELECT * from vehicles;
 ```
-
-### Class diagram
-
-![classdiagram image](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.github.com/bwalter/golang-scylla/master/classdiagram.plantuml)

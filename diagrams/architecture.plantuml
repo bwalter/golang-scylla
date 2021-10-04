@@ -1,0 +1,22 @@
+@startuml Class diagram
+
+actor User
+interface HTTP
+
+' cloud {
+	component HelloApp
+	database Scylla as "Scylla DB"
+' }
+
+User -right-( HTTP
+HTTP -right- HelloApp
+HelloApp -down-> Scylla : queries
+
+note top of HTTP
+	Rest API:
+	* POST /vehicle + JSON body
+	* GET /vehicle/<vin>
+	* DELETE /vehicle/<vin>
+end note
+
+@enduml

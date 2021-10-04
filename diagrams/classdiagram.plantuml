@@ -1,6 +1,17 @@
 @startuml Class diagram
 
-class HttpServer as "http.Server" {
+skinparam shadowing false
+
+skinparam class {
+	BackgroundColor White
+	ArrowColor #444444
+	BorderColor #444444
+
+	BackgroundColor<<External>> #dddddd
+	BorderColor<<External>> Gray
+}
+
+class HttpServer as "http.Server" <<External>> {
     + ListenAndServe()
 }
 
@@ -9,7 +20,7 @@ class App {
     - createVehicle()
     - deleteVehicle()
 }
-class Router as "mux.Router" {
+class Router as "mux.Router" <<External>> {
     + HandleFunc(path: String, f: func)
 }
 
@@ -31,25 +42,25 @@ class EvData as "model.EvData" {
 	SocInPercent: int
 }
 
-Queries --> Vehicle
+Queries ---> Vehicle
 Vehicle *-down-> EvData
 
 class ScyllaQueries as "db.ScyllaQueries"
-
-class ScyllaVehicle as "db.ScyllaVehicle" {
-    {static} + NewScyllaVehicle(v: model.Vehicle)
-    + ToModelVehicle(): Vehicle
-}
+class ScyllaVehicle as "db.ScyllaVehicle"
 
 ScyllaQueries .do.> ScyllaVehicle
 
-HttpServer -> Router
+HttpServer -down-> Router
 
-App o-down-> Router
+App o-left-> Router
 App o-> Queries
-App ..> Vehicle
+App ---> Vehicle
 Queries <|-- ScyllaQueries
 
 Router -[hidden]right- Queries
+
+ScyllaVehicle .left.> Vehicle : from/to
+
+Vehicle -[hidden]right- ScyllaVehicle
 
 @enduml
