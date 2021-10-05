@@ -36,6 +36,7 @@ interface UserQueries as "db.UserQueries" <<db>> {
 	+ CreateUser()
 	+ FindUser()
 }
+remove UserQueries
 
 App o-> Queries
 Router -[hidden]right- Queries
@@ -47,7 +48,7 @@ UserQueries -[hidden]down- VehicleQueries
 
 ' Scylla
 
-class ScyllaQueries as "db ScyllaQueries" <<db>>
+class ScyllaQueries as "scylla.Queries" <<db>>
 class ScyllaSession as "gocqlx.Session" <<external>>
 
 Queries <|-down- ScyllaQueries
@@ -63,7 +64,7 @@ ScyllaQueries o-left-> ScyllaSession
 legend right
 |= |= <color:#000000>Legend  \n|
 |<color:$appColor>■</color>| <color:#333333>app |
-|<color:$dbColor>■</color>| <color:#333333>db |
+|<color:$dbColor>■</color>| <color:#333333>db / scylla |
 |<color:$externalColor>■</color>| <color:#333333>external |
 endlegend
 

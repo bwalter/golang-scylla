@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"bwa.com/hello/app"
-	"bwa.com/hello/db"
+	"bwa.com/hello/db/scylla"
 	"github.com/jessevdk/go-flags"
 )
 
@@ -43,13 +43,13 @@ func main() {
 	keyspace := "hello"
 
 	// Scylla Keyspace
-	err = db.CreateScyllaKeyspace(host, keyspace, false)
+	err = scylla.CreateKeyspace(host, keyspace, false)
 	if err != nil {
 		panic(err)
 	}
 
 	// Queries
-	queries, err := db.StartScyllaSessionAndCreateQueries(host, keyspace)
+	queries, err := scylla.StartSessionAndCreateQueries(host, keyspace)
 	if err != nil {
 		panic(err)
 	}

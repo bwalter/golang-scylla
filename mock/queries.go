@@ -7,6 +7,7 @@ package mock
 import (
 	reflect "reflect"
 
+	db "bwa.com/hello/db"
 	model "bwa.com/hello/model"
 	gomock "github.com/golang/mock/gomock"
 )
@@ -60,8 +61,45 @@ func (mr *MockQueriesMockRecorder) CreateTablesIfNotExist() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTablesIfNotExist", reflect.TypeOf((*MockQueries)(nil).CreateTablesIfNotExist))
 }
 
+// VehicleQueries mocks base method.
+func (m *MockQueries) VehicleQueries() db.VehicleQueries {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VehicleQueries")
+	ret0, _ := ret[0].(db.VehicleQueries)
+	return ret0
+}
+
+// VehicleQueries indicates an expected call of VehicleQueries.
+func (mr *MockQueriesMockRecorder) VehicleQueries() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VehicleQueries", reflect.TypeOf((*MockQueries)(nil).VehicleQueries))
+}
+
+// MockVehicleQueries is a mock of VehicleQueries interface.
+type MockVehicleQueries struct {
+	ctrl     *gomock.Controller
+	recorder *MockVehicleQueriesMockRecorder
+}
+
+// MockVehicleQueriesMockRecorder is the mock recorder for MockVehicleQueries.
+type MockVehicleQueriesMockRecorder struct {
+	mock *MockVehicleQueries
+}
+
+// NewMockVehicleQueries creates a new mock instance.
+func NewMockVehicleQueries(ctrl *gomock.Controller) *MockVehicleQueries {
+	mock := &MockVehicleQueries{ctrl: ctrl}
+	mock.recorder = &MockVehicleQueriesMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockVehicleQueries) EXPECT() *MockVehicleQueriesMockRecorder {
+	return m.recorder
+}
+
 // CreateVehicle mocks base method.
-func (m *MockQueries) CreateVehicle(vehicle model.Vehicle) error {
+func (m *MockVehicleQueries) CreateVehicle(vehicle model.Vehicle) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateVehicle", vehicle)
 	ret0, _ := ret[0].(error)
@@ -69,13 +107,13 @@ func (m *MockQueries) CreateVehicle(vehicle model.Vehicle) error {
 }
 
 // CreateVehicle indicates an expected call of CreateVehicle.
-func (mr *MockQueriesMockRecorder) CreateVehicle(vehicle interface{}) *gomock.Call {
+func (mr *MockVehicleQueriesMockRecorder) CreateVehicle(vehicle interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateVehicle", reflect.TypeOf((*MockQueries)(nil).CreateVehicle), vehicle)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateVehicle", reflect.TypeOf((*MockVehicleQueries)(nil).CreateVehicle), vehicle)
 }
 
 // FindVehicle mocks base method.
-func (m *MockQueries) FindVehicle(vin string) (*model.Vehicle, error) {
+func (m *MockVehicleQueries) FindVehicle(vin string) (*model.Vehicle, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindVehicle", vin)
 	ret0, _ := ret[0].(*model.Vehicle)
@@ -84,7 +122,7 @@ func (m *MockQueries) FindVehicle(vin string) (*model.Vehicle, error) {
 }
 
 // FindVehicle indicates an expected call of FindVehicle.
-func (mr *MockQueriesMockRecorder) FindVehicle(vin interface{}) *gomock.Call {
+func (mr *MockVehicleQueriesMockRecorder) FindVehicle(vin interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindVehicle", reflect.TypeOf((*MockQueries)(nil).FindVehicle), vin)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindVehicle", reflect.TypeOf((*MockVehicleQueries)(nil).FindVehicle), vin)
 }

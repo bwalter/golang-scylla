@@ -27,22 +27,17 @@ Features:
 - Github actions, see .github/workflows/go.yml
 - Docker image generation, see Dockerfile
 
-#### Missing:
-- Authentication
+#### TODO:
+- Database migrations
+- Authentication/session
 - i18n
 
 #### Class diagram:
 ![classdiagram image](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.github.com/bwalter/golang-scylla/master/doc/classdiagram.plantuml)
 
-### Start Scylla DB using Docker
-
-```
-$ docker run -p 3001:3001 --link=hello-scylla:scylla -it hello-app --addr scylla
-```
-
 ### Build and run demo app
 
-Manually:
+Manually (pre-condition: Scylla DB already running):
 ```
 $ make check
 $ make
@@ -51,8 +46,9 @@ $ ./bin/hello
 
 Via docker:
 ```
+$ docker run --name hello-scylla -d -p 9042:9042 scylladb/scylla
 $ docker build -t hello-app .
-$ docker run -t -i -p 3001:3001 --link=hello-scylla -it hello-app  --addr scylla
+$ docker run -t -i -p 3001:3001 --link=hello-scylla:scylla -it hello-app --addr scylla
 ```
 
 Via docker-compose:
@@ -100,6 +96,5 @@ $ curl -v -H "Accept: application/json" -H "Content-type: application/json" loca
 ```
 $ docker exec -it hello-scylla nodetool status
 $ docker exec -it hello-scylla cqlsh
-cqlsh> USE hello;
-cqlsh:hello> SELECT * from vehicles;
+cqlsh> SELECT * from hello.vehicles;
 ```

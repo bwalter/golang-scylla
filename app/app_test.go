@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"bwa.com/hello/db"
 	"bwa.com/hello/helpers"
 	"bwa.com/hello/mock"
 	"bwa.com/hello/model"
@@ -15,14 +16,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var mockQueries *mock.MockQueries
+var mockVehicleQueries *mock.MockVehicleQueries
 var app App
 var srv *httptest.Server
 
 func setUp(t *testing.T) {
 	// Queries
 	ctrl := gomock.NewController(t)
-	mockQueries = mock.NewMockQueries(ctrl)
+	mockQueries := mock.NewMockQueries(ctrl)
+	mockVehicleQueries = mock.NewMockVehicleQueries(ctrl)
+	mockQueries.EXPECT().VehicleQueries().DoAndReturn(func() db.VehicleQueries { return mockVehicleQueries }).AnyTimes()
 
 	// App
 	app = NewApp(mockQueries)
@@ -46,7 +49,7 @@ func TestPostVehicle(t *testing.T) {
 	require.NoError(t, err)
 
 	// Expect DB CreateVehicle
-	mockQueries.EXPECT().CreateVehicle(gomock.Eq(vehicle)).Return(nil)
+	mockVehicleQueries.EXPECT().CreateVehicle(gomock.Eq(vehicle)).Return(nil)
 
 	// Send POST request
 	req, err := http.NewRequest("POST", "/vehicle", bytes.NewBuffer(vehicleJSON))
@@ -75,7 +78,7 @@ func TestPostVehicleInternalError(t *testing.T) {
 	require.NoError(t, err)
 
 	// Expect DB CreateVehicle
-	mockQueries.EXPECT().CreateVehicle(gomock.Eq(vehicle)).Return(errors.New("test CreateVehicle error"))
+	mockVehicleQueries.EXPECT().CreateVehicle(gomock.Eq(vehicle)).Return(errors.New("test CreateVehicle error"))
 
 	// Send POST request
 	req, err := http.NewRequest("POST", "/vehicle", bytes.NewBuffer(vehicleJSON))
@@ -100,7 +103,7 @@ func TestGetVehicle(t *testing.T) {
 
 	// Expect DB FindVehicle
 	vehicle := model.Vehicle{Vin: "vin1", EngineType: "Combustion", EvData: nil}
-	mockQueries.EXPECT().FindVehicle(gomock.Eq("vin1")).Return(&vehicle, nil)
+	mockVehicleQueries.EXPECT().FindVehicle(gomock.Eq("vin1")).Return(&vehicle, nil)
 
 	// Send GET request
 	req, err := http.NewRequest("GET", "/vehicle?vin=vin1", nil)
@@ -124,7 +127,7 @@ func TestGetVehicleNotFound(t *testing.T) {
 	defer tearDown()
 
 	// Expect DB FindVehicle
-	mockQueries.EXPECT().FindVehicle(gomock.Eq("wrong")).Return(nil, nil)
+	mockVehicleQueries.EXPECT().FindVehicle(gomock.Eq("wrong")).Return(nil, nil)
 
 	// Send GET request
 	req, err := http.NewRequest("GET", "/vehicle?vin=wrong", nil)
@@ -148,7 +151,7 @@ func TestGetVehicleInternalError(t *testing.T) {
 	defer tearDown()
 
 	// Expect DB FindVehicle
-	mockQueries.EXPECT().FindVehicle(gomock.Eq("vin1")).Return(nil, errors.New("test FindVehicle error"))
+	mockVehicleQueries.EXPECT().FindVehicle(gomock.Eq("vin1")).Return(nil, errors.New("test FindVehicle error"))
 
 	// Send GET request
 	req, err := http.NewRequest("GET", "/vehicle?vin=vin1", nil)

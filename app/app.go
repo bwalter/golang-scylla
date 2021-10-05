@@ -58,7 +58,7 @@ func (a *App) createVehicle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := a.queries.CreateVehicle(vehicle); err != nil {
+	if err := a.queries.VehicleQueries().CreateVehicle(vehicle); err != nil {
 		helpers.RespondWithError(w, 500, fmt.Sprintf("Could not create vehicle: %s", err))
 		return
 	}
@@ -75,7 +75,7 @@ func (a *App) findVehicle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	vin := vins[0]
-	vehicle, err := a.queries.FindVehicle(vin)
+	vehicle, err := a.queries.VehicleQueries().FindVehicle(vin)
 	if err != nil {
 		helpers.RespondWithError(w, 500, fmt.Sprintf("Could not find vehicle: %s", err))
 	}

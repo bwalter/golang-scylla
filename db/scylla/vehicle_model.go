@@ -1,4 +1,4 @@
-package db
+package scylla
 
 import (
 	"bwa.com/hello/model"
@@ -15,7 +15,7 @@ var vehicleMetadata = table.Metadata{
 
 var vehicleTable = table.New(vehicleMetadata)
 
-type ScyllaVehicle struct {
+type Vehicle struct {
 	Vin        string
 	EngineType string
 	EvData     EvDataUDT // does not work as optional value (pointer)
@@ -28,7 +28,7 @@ type EvDataUDT struct {
 	SocInPercent         int
 }
 
-func NewScyllaVehicle(vehicle model.Vehicle) (ScyllaVehicle, error) {
+func NewVehicle(vehicle model.Vehicle) (Vehicle, error) {
 	var evDataUDT EvDataUDT
 	if vehicle.EvData != nil {
 		evDataUDT = EvDataUDT{
@@ -37,14 +37,14 @@ func NewScyllaVehicle(vehicle model.Vehicle) (ScyllaVehicle, error) {
 		}
 	}
 
-	return ScyllaVehicle{
+	return Vehicle{
 		Vin:        vehicle.Vin,
 		EngineType: vehicle.EngineType,
 		EvData:     evDataUDT,
 	}, nil
 }
 
-func (sv *ScyllaVehicle) ToModelVehicle() (model.Vehicle, error) {
+func (sv *Vehicle) ToModelVehicle() (model.Vehicle, error) {
 	var evDataPtr *model.EvData
 	if sv.EvData.BatteryCapacityInKwh > 0 {
 		evDataPtr = &model.EvData{

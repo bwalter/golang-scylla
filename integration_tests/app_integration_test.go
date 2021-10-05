@@ -11,6 +11,7 @@ import (
 
 	"bwa.com/hello/app"
 	"bwa.com/hello/db"
+	"bwa.com/hello/db/scylla"
 	"bwa.com/hello/helpers"
 	"bwa.com/hello/model"
 	"github.com/stretchr/testify/require"
@@ -32,11 +33,11 @@ func setUp(t *testing.T) {
 	keyspace := "hello_test"
 
 	// Create test keyspace
-	err := db.CreateScyllaKeyspace(host, keyspace, true)
+	err := scylla.CreateKeyspace(host, keyspace, true)
 	require.NoError(t, err)
 
 	// Start session
-	q, err := db.StartScyllaSessionAndCreateQueries(host, keyspace)
+	q, err := scylla.StartSessionAndCreateQueries(host, keyspace)
 	require.NoError(t, err)
 	queries = q
 
@@ -77,7 +78,7 @@ func TestPostVehicle(t *testing.T) {
 	require.Equal(t, vehicle, responseVehicle)
 
 	// Check vehicle
-	vehiclePtr, err := queries.FindVehicle("vin1")
+	vehiclePtr, err := queries.VehicleQueries().FindVehicle("vin1")
 	require.NoError(t, err)
 	require.NotNil(t, vehiclePtr)
 	require.Equal(t, vehicle, *vehiclePtr)
@@ -94,7 +95,7 @@ func TestGetVehicle(t *testing.T) {
 
 	// Insert vehicle
 	vehicle := model.Vehicle{Vin: "vin1", EngineType: "Combustion"}
-	err := queries.CreateVehicle(vehicle)
+	err := queries.VehicleQueries().CreateVehicle(vehicle)
 	require.NoError(t, err)
 
 	// Send GET request => OK
