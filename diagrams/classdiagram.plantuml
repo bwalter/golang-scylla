@@ -1,17 +1,28 @@
 @startuml Class diagram
 
+hide stereotype
+hide class fields
+hide interface fields
 skinparam shadowing false
 
 skinparam class {
-	BackgroundColor White
+	BackgroundColor #ffeeee
 	ArrowColor #444444
 	BorderColor #444444
 
-	BackgroundColor<<External>> #dddddd
-	BorderColor<<External>> Gray
+	BackgroundColor<<external>> #dddddd
+	BorderColor<<external>> Gray
+
+	BackgroundColor<<db>> #c9e2ff
+	BorderColor<<db>> #5c5c5c
 }
 
-class HttpServer as "http.Server" <<External>> {
+skinparam legendBackgroundColor #ffffff
+skinparam legendBorderColor #4c4c4c
+skinparam LegendFontColor #ffffff
+skinparam LegendFontSize 14
+
+class HttpServer as "http.Server" <<external>> {
     + ListenAndServe()
 }
 
@@ -20,47 +31,49 @@ class App {
     - createVehicle()
     - deleteVehicle()
 }
-class Router as "mux.Router" <<External>> {
-    + HandleFunc(path: String, f: func)
+class Router as "mux.Router" <<external>> {
+    + HandleFunc(path, func)
 }
-
-interface Queries as "db.Queries" {
-	+ CreateTablesIfNotExist(): error
-	+ CloseSession()
-	+ CreateVehicle(vehicle: model.Vehicle): error
-	+ FindVehicle(vin: string): (*model.Vehicle, error)
-}
-
-class Vehicle as "model.Vehicle" {
-	+ Vin: string
-	+ EngineType: string
-	+ EvData: *EvData
-}
-
-class EvData as "model.EvData" {
-	BatteryCapacityInKwh: int
-	SocInPercent: int
-}
-
-Queries ---> Vehicle
-Vehicle *-down-> EvData
-
-class ScyllaQueries as "db.ScyllaQueries"
-class ScyllaVehicle as "db.ScyllaVehicle"
-
-ScyllaQueries .do.> ScyllaVehicle
 
 HttpServer -down-> Router
-
 App o-left-> Router
+
+interface Queries as "db.Queries" <<db>> {
+	+ CreateTablesIfNotExist()
+	+ CloseSession()
+}
+
+interface VehicleQueries as "db.VehicleQueries" <<db>> {
+	+ CreateVehicle()
+	+ FindVehicle()
+}
+
+interface UserQueries as "db.UserQueries" <<db>> {
+	+ CreateUser()
+	+ FindUser()
+}
+
+class ScyllaQueries as "db ScyllaQueries" <<db>>
+
+Queries o-> UserQueries
+Queries o-right-> VehicleQueries
+UserQueries -[hidden]down- VehicleQueries
+
+class ScyllaSession as "gocqlx.Session" <<external>>
+
 App o-> Queries
-App ---> Vehicle
-Queries <|-- ScyllaQueries
+UserQueries -[hidden]down- VehicleQueries
+ScyllaQueries o-left-> ScyllaSession
+
+Queries <|-down- ScyllaQueries
 
 Router -[hidden]right- Queries
 
-ScyllaVehicle .left.> Vehicle : from/to
-
-Vehicle -[hidden]right- ScyllaVehicle
+legend left
+|= |= <color:#000000>Legend  \n|
+|<color:#ff6666>■</color>| <color:#333333>top level |
+|<color:#6666ff>■</color>| <color:#333333>db |
+|<color:#aaaaaa>■</color>| <color:#333333>external |
+endlegend
 
 @enduml
