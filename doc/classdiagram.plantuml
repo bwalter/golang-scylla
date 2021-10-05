@@ -1,0 +1,111 @@
+@startuml Class diagram
+
+
+' HttpServer, Router, App
+
+class HttpServer as "http.Server" <<external>> {
+    + ListenAndServe()
+}
+
+class App <<app>> {
+    + CloseSession()
+    - createVehicle()
+    - deleteVehicle()
+}
+class Router as "mux.Router" <<external>> {
+    + HandleFunc(path, func)
+}
+
+HttpServer -down-> Router
+App o-left-> Router
+
+
+' Queries
+
+interface Queries as "db.Queries" <<db>> {
+	+ CreateTablesIfNotExist()
+	+ CloseSession()
+}
+
+interface VehicleQueries as "db.VehicleQueries" <<db>> {
+	+ CreateVehicle()
+	+ FindVehicle()
+}
+
+interface UserQueries as "db.UserQueries" <<db>> {
+	+ CreateUser()
+	+ FindUser()
+}
+
+App o-> Queries
+Router -[hidden]right- Queries
+Queries o-> UserQueries
+Queries o-right-> VehicleQueries
+UserQueries -[hidden]down- VehicleQueries
+UserQueries -[hidden]down- VehicleQueries
+
+
+' Scylla
+
+class ScyllaQueries as "db ScyllaQueries" <<db>>
+class ScyllaSession as "gocqlx.Session" <<external>>
+
+Queries <|-down- ScyllaQueries
+ScyllaQueries o-left-> ScyllaSession
+
+
+' Legend
+
+!$appColor = "#ec3c13"
+!$dbColor = "#1b91db"
+!$externalColor = "#787878"
+
+legend right
+|= |= <color:#000000>Legend  \n|
+|<color:$appColor>■</color>| <color:#333333>app |
+|<color:$dbColor>■</color>| <color:#333333>db |
+|<color:$externalColor>■</color>| <color:#333333>external |
+endlegend
+
+
+' Appearance
+
+hide stereotype
+hide class fields
+hide interface fields
+Skinparam shadowing false
+
+hide annotation circle
+
+skinparam {
+	RoundCorner 10
+	Padding 2
+	
+	ArrowColor #787878
+	ArrowThickness 2
+}
+
+skinparam class {
+	BorderThickness 2
+	BackgroundColor #ffffff
+	AttributeFontColor #2f2f2f
+	AttributeFontSize 15
+	FontSize 17
+	FontStyle "bold"
+
+	FontColor<<app>> $appColor
+	BorderColor<<app>> $appColor
+
+	FontColor<<db>> $dbColor
+	BorderColor<<db>> $dbColor
+
+	FontColor<<external>> $externalColor
+	BorderColor<<external>> $externalColor
+}
+
+skinparam legendBackgroundColor #ffffff
+skinparam legendBorderColor #4c4c4c
+skinparam LegendFontColor #ffffff
+skinparam LegendFontSize 15
+
+@enduml

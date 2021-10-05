@@ -10,7 +10,7 @@ Features:
 
 #### Architecture:
 
-![architecture image](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.github.com/bwalter/golang-scylla/master/diagrams/architecture.plantuml)
+![architecture image](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.github.com/bwalter/golang-scylla/master/doc/architecture.plantuml)
 
 #### Libraries/tools:
 - HTTP server (based on net/http), see main.go
@@ -32,7 +32,7 @@ Features:
 - i18n
 
 #### Class diagram:
-![classdiagram image](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.github.com/bwalter/golang-scylla/master/diagrams/classdiagram.plantuml)
+![classdiagram image](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.github.com/bwalter/golang-scylla/master/doc/classdiagram.plantuml)
 
 ### Start Scylla DB using Docker
 
