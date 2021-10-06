@@ -1,4 +1,4 @@
-package app
+package handlers
 
 import (
 	"bytes"
@@ -17,8 +17,7 @@ import (
 )
 
 var mockVehicleQueries *mock.MockVehicleQueries
-var app App
-var srv *httptest.Server
+var handlers Handlers
 
 func setUp(t *testing.T) {
 	// Queries
@@ -27,15 +26,11 @@ func setUp(t *testing.T) {
 	mockVehicleQueries = mock.NewMockVehicleQueries(ctrl)
 	mockQueries.EXPECT().VehicleQueries().DoAndReturn(func() db.VehicleQueries { return mockVehicleQueries }).AnyTimes()
 
-	// App
-	app = NewApp(mockQueries)
-
-	// Server
-	srv = httptest.NewServer(app.Router)
+	// Handlers
+	handlers = NewHandlers(mockQueries)
 }
 
 func tearDown() {
-	srv.Close()
 }
 
 // POST /vehicle => OK
@@ -55,7 +50,7 @@ func TestPostVehicle(t *testing.T) {
 	req, err := http.NewRequest("POST", "/vehicle", bytes.NewBuffer(vehicleJSON))
 	require.NoError(t, err)
 	rr := httptest.NewRecorder()
-	app.Router.ServeHTTP(rr, req)
+	handlers.PostVehicle(rr, req)
 
 	// Check code
 	require.Equal(t, 201, rr.Code)
@@ -84,7 +79,7 @@ func TestPostVehicleInternalError(t *testing.T) {
 	req, err := http.NewRequest("POST", "/vehicle", bytes.NewBuffer(vehicleJSON))
 	require.NoError(t, err)
 	rr := httptest.NewRecorder()
-	app.Router.ServeHTTP(rr, req)
+	handlers.PostVehicle(rr, req)
 
 	// Check code
 	require.Equal(t, 500, rr.Code)
@@ -109,7 +104,7 @@ func TestGetVehicle(t *testing.T) {
 	req, err := http.NewRequest("GET", "/vehicle?vin=vin1", nil)
 	require.NoError(t, err)
 	rr := httptest.NewRecorder()
-	app.Router.ServeHTTP(rr, req)
+	handlers.GetVehicle(rr, req)
 
 	// Check code
 	require.Equal(t, 200, rr.Code)
@@ -133,7 +128,7 @@ func TestGetVehicleNotFound(t *testing.T) {
 	req, err := http.NewRequest("GET", "/vehicle?vin=wrong", nil)
 	require.NoError(t, err)
 	rr := httptest.NewRecorder()
-	app.Router.ServeHTTP(rr, req)
+	handlers.GetVehicle(rr, req)
 
 	// Check code
 	require.Equal(t, 404, rr.Code)
@@ -157,7 +152,7 @@ func TestGetVehicleInternalError(t *testing.T) {
 	req, err := http.NewRequest("GET", "/vehicle?vin=vin1", nil)
 	require.NoError(t, err)
 	rr := httptest.NewRecorder()
-	app.Router.ServeHTTP(rr, req)
+	handlers.GetVehicle(rr, req)
 
 	// Check code
 	require.Equal(t, 500, rr.Code)

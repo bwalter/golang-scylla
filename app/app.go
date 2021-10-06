@@ -2,27 +2,26 @@ package app
 
 import (
 	"bwa.com/hello/db"
-	"bwa.com/hello/helpers"
-	"bwa.com/hello/model"
+	"bwa.com/hello/handlers"
 
 	"github.com/gorilla/mux"
-
-	"fmt"
-	"net/http"
 )
 
 type App struct {
-	Router  *mux.Router
-	queries db.Queries
+	Router   *mux.Router
+	handlers handlers.Handlers
+	queries  db.Queries
 }
 
 // Create app with a router for handling requests
 func NewApp(queries db.Queries) App {
 	r := mux.NewRouter()
+	h := handlers.NewHandlers(queries)
 
 	a := App{
-		Router:  r,
-		queries: queries,
+		Router:   r,
+		handlers: h,
+		queries:  queries,
 	}
 
 	// CreateVehicle handler
@@ -31,7 +30,7 @@ func NewApp(queries db.Queries) App {
 	// @produce json
 	// @success 201 {json} CREATED
 	// @failure 500 {json}
-	r.HandleFunc("/vehicle", a.createVehicle).Methods("POST")
+	r.HandleFunc("/vehicle", h.PostVehicle).Methods("POST")
 
 	// FindVehicle handler
 	// @summary Get vehicle info.
@@ -40,50 +39,11 @@ func NewApp(queries db.Queries) App {
 	// @success 200 {json} OK
 	// @failure 404 {string} The vehicle was not found
 	// @failure 500 {json}
-	r.HandleFunc("/vehicle", a.findVehicle).Methods("GET")
+	r.HandleFunc("/vehicle", h.GetVehicle).Methods("GET")
 
 	return a
 }
 
 func (a *App) CloseSession() {
 	a.queries.CloseSession()
-}
-
-// POST (body: vehicle JSON) => (200 body: vehicle JSON) or (500 body: vehicle JSON)
-func (a *App) createVehicle(w http.ResponseWriter, r *http.Request) {
-	var vehicle model.Vehicle
-
-	if err := helpers.DecodeJSONBody(r.Body, &vehicle); err != nil {
-		helpers.RespondWithError(w, 500, fmt.Sprintf("Could not decode vehicle: %s", err))
-		return
-	}
-
-	if err := a.queries.VehicleQueries().CreateVehicle(vehicle); err != nil {
-		helpers.RespondWithError(w, 500, fmt.Sprintf("Could not create vehicle: %s", err))
-		return
-	}
-
-	helpers.RespondWithJSON(w, 201, vehicle)
-}
-
-// GET (query: vin) => (200 body: vehicle JSON) or (404 body: vehicle vin JSON) or (500 body: error JSON)
-func (a *App) findVehicle(w http.ResponseWriter, r *http.Request) {
-	vins := r.URL.Query()["vin"]
-	if vins == nil {
-		helpers.RespondWithError(w, 500, "Could not find vehicle (missing 'vin' query parameter)")
-		return
-	}
-
-	vin := vins[0]
-	vehicle, err := a.queries.VehicleQueries().FindVehicle(vin)
-	if err != nil {
-		helpers.RespondWithError(w, 500, fmt.Sprintf("Could not find vehicle: %s", err))
-	}
-
-	if vehicle == nil {
-		helpers.RespondWithJSON(w, 404, map[string]string{"vin": vin})
-		return
-	}
-
-	helpers.RespondWithJSON(w, 200, vehicle)
 }

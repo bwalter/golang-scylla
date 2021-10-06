@@ -26,6 +26,7 @@ end note
 Skinparam shadowing false
 
 skinparam {
+	BackgroundColor #f2f2f2
 	RoundCorner 10
 	ArrowColor #787878
 }
@@ -52,7 +53,7 @@ skinparam actor {
 }
 
 skinparam interface {
-	BorderColor #000000
+	BorderColor $appColor
 	BackgroundColor #ffffff
 }
 

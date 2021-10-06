@@ -35,6 +35,7 @@ test: unit-tests integration-tests
 
 unit-tests: build-mocks
 	@CGO_ENABLED="0" go test ./app -v
+	@CGO_ENABLED="0" go test ./handlers -v
 
 integration-tests:
 	@go test -cpu 1 -count=1 -v ./integration_tests

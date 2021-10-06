@@ -7,17 +7,22 @@ class HttpServer as "http.Server" <<external>> {
     + ListenAndServe()
 }
 
-class App <<app>> {
+class App as "app.App" <<app>> {
     + CloseSession()
-    - createVehicle()
-    - deleteVehicle()
 }
 class Router as "mux.Router" <<external>> {
     + HandleFunc(path, func)
 }
 
+class VehicleHandlers as "app.VehicleHandlers" <<handlers>> {
+    + PostVehicle()
+    + GetVehicle()
+    + DeleteVehicle()
+}
+
 HttpServer -down-> Router
 App o-left-> Router
+App o-down-> VehicleHandlers : route
 
 
 ' Queries
@@ -25,11 +30,13 @@ App o-left-> Router
 interface Queries as "db.Queries" <<db>> {
 	+ CreateTablesIfNotExist()
 	+ CloseSession()
+	+ VehicleQueries()
 }
 
 interface VehicleQueries as "db.VehicleQueries" <<db>> {
 	+ CreateVehicle()
 	+ FindVehicle()
+	+ DeleteVehicle()
 }
 
 interface UserQueries as "db.UserQueries" <<db>> {
@@ -38,7 +45,8 @@ interface UserQueries as "db.UserQueries" <<db>> {
 }
 remove UserQueries
 
-App o-> Queries
+App o-down-> Queries
+VehicleHandlers -down-> Queries
 Router -[hidden]right- Queries
 Queries o-> UserQueries
 Queries o-right-> VehicleQueries
@@ -59,11 +67,13 @@ ScyllaQueries o-left-> ScyllaSession
 
 !$appColor = "#ec3c13"
 !$dbColor = "#1b91db"
+!$handlersColor = "#71b32b"
 !$externalColor = "#787878"
 
 legend right
 |= |= <color:#000000>Legend  \n|
 |<color:$appColor>■</color>| <color:#333333>app |
+|<color:$handlersColor>■</color>| <color:#333333>handlers |
 |<color:$dbColor>■</color>| <color:#333333>db / scylla |
 |<color:$externalColor>■</color>| <color:#333333>external |
 endlegend
@@ -79,6 +89,7 @@ Skinparam shadowing false
 hide annotation circle
 
 skinparam {
+	BackgroundColor #f2f2f2
 	RoundCorner 10
 	Padding 2
 	
@@ -90,12 +101,15 @@ skinparam class {
 	BorderThickness 2
 	BackgroundColor #ffffff
 	AttributeFontColor #2f2f2f
-	AttributeFontSize 15
-	FontSize 17
+	AttributeFontSize 10
+	FontSize 12
 	FontStyle "bold"
 
 	FontColor<<app>> $appColor
 	BorderColor<<app>> $appColor
+
+	FontColor<<handlers>> $handlersColor
+	BorderColor<<handlers>> $handlersColor
 
 	FontColor<<db>> $dbColor
 	BorderColor<<db>> $dbColor
@@ -107,6 +121,6 @@ skinparam class {
 skinparam legendBackgroundColor #ffffff
 skinparam legendBorderColor #4c4c4c
 skinparam LegendFontColor #ffffff
-skinparam LegendFontSize 15
+skinparam LegendFontSize 11
 
 @enduml
