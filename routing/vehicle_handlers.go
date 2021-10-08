@@ -1,4 +1,4 @@
-package handlers
+package routing
 
 import (
 	"fmt"
@@ -9,18 +9,19 @@ import (
 	"bwa.com/hello/model"
 )
 
-type Handlers struct {
+type VehicleHandlers struct {
 	queries db.Queries
 }
 
-func NewHandlers(q db.Queries) Handlers {
-	return Handlers{
+func NewVehicleHandlers(q db.Queries) VehicleHandlers {
+	return VehicleHandlers{
 		queries: q,
 	}
+
 }
 
 // POST (body: vehicle JSON) => (200 body: vehicle JSON) or (500 body: vehicle JSON)
-func (h *Handlers) PostVehicle(w http.ResponseWriter, r *http.Request) {
+func (h *VehicleHandlers) PostVehicle(w http.ResponseWriter, r *http.Request) {
 	var vehicle model.Vehicle
 
 	if err := helpers.DecodeJSONBody(r.Body, &vehicle); err != nil {
@@ -37,7 +38,7 @@ func (h *Handlers) PostVehicle(w http.ResponseWriter, r *http.Request) {
 }
 
 // GET (query: vin) => (200 body: vehicle JSON) or (404 body: vehicle vin JSON) or (500 body: error JSON)
-func (h *Handlers) GetVehicle(w http.ResponseWriter, r *http.Request) {
+func (h *VehicleHandlers) GetVehicle(w http.ResponseWriter, r *http.Request) {
 	vins := r.URL.Query()["vin"]
 	if vins == nil {
 		helpers.RespondWithError(w, 500, "Could not find vehicle (missing 'vin' query parameter)")

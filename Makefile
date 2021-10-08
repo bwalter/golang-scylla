@@ -26,7 +26,7 @@ build-mocks:
 
 apidoc:
 	@GOBIN=$(GOBIN) go install github.com/spaceavocado/apidoc@v0.3.5
-	@$(GOBIN)/apidoc -m ./main.go -o docs
+	@$(GOBIN)/apidoc -m ./main.go -o doc
 
 check:
 	@golangci-lint run
@@ -35,7 +35,7 @@ test: unit-tests integration-tests
 
 unit-tests: build-mocks
 	@CGO_ENABLED="0" go test ./app -v
-	@CGO_ENABLED="0" go test ./handlers -v
+	@CGO_ENABLED="0" go test ./routing -v
 
 integration-tests:
 	@go test -cpu 1 -count=1 -v ./integration_tests

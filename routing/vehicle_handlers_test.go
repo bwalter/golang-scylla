@@ -1,4 +1,4 @@
-package handlers
+package routing
 
 import (
 	"bytes"
@@ -17,7 +17,7 @@ import (
 )
 
 var mockVehicleQueries *mock.MockVehicleQueries
-var handlers Handlers
+var handlers VehicleHandlers
 
 func setUp(t *testing.T) {
 	// Queries
@@ -27,7 +27,7 @@ func setUp(t *testing.T) {
 	mockQueries.EXPECT().VehicleQueries().DoAndReturn(func() db.VehicleQueries { return mockVehicleQueries }).AnyTimes()
 
 	// Handlers
-	handlers = NewHandlers(mockQueries)
+	handlers = NewVehicleHandlers(mockQueries)
 }
 
 func tearDown() {

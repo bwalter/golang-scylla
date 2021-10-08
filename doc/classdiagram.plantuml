@@ -14,15 +14,21 @@ class Router as "mux.Router" <<external>> {
     + HandleFunc(path, func)
 }
 
-class VehicleHandlers as "app.VehicleHandlers" <<handlers>> {
+class VehicleHandlers as "routing.VehicleHandlers" <<routing>> {
     + PostVehicle()
     + GetVehicle()
     + DeleteVehicle()
 }
 
+annotation routing as "routing.*" <<routing>> {
+	+ Route()
+}
+
 HttpServer -down-> Router
 App o-left-> Router
-App o-down-> VehicleHandlers : route
+App .down.> routing
+routing .> VehicleHandlers : route
+routing .> Router
 
 
 ' Queries
@@ -67,13 +73,13 @@ ScyllaQueries o-left-> ScyllaSession
 
 !$appColor = "#ec3c13"
 !$dbColor = "#1b91db"
-!$handlersColor = "#71b32b"
+!$routingColor = "#71b32b"
 !$externalColor = "#787878"
 
 legend right
 |= |= <color:#000000>Legend  \n|
 |<color:$appColor>■</color>| <color:#333333>app |
-|<color:$handlersColor>■</color>| <color:#333333>handlers |
+|<color:$routingColor>■</color>| <color:#333333>routing |
 |<color:$dbColor>■</color>| <color:#333333>db / scylla |
 |<color:$externalColor>■</color>| <color:#333333>external |
 endlegend
@@ -108,8 +114,8 @@ skinparam class {
 	FontColor<<app>> $appColor
 	BorderColor<<app>> $appColor
 
-	FontColor<<handlers>> $handlersColor
-	BorderColor<<handlers>> $handlersColor
+	FontColor<<routing>> $routingColor
+	BorderColor<<routing>> $routingColor
 
 	FontColor<<db>> $dbColor
 	BorderColor<<db>> $dbColor
