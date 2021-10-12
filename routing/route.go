@@ -5,8 +5,8 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func Route(r *mux.Router, q db.Queries) {
-	vh := NewVehicleHandlers(q)
+func Route(r *mux.Router, d db.Database) {
+	vh := NewVehicleHandlers(d)
 
 	// CreateVehicle handler
 	// @summary Create a new vehicle.

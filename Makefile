@@ -21,8 +21,9 @@ build: dependencies
 	@go build -o $(BIN)/hello
 
 build-mocks:
+	@rm -f ./mock/*
 	@GOBIN=$(GOBIN) go install github.com/golang/mock/mockgen@v1.6.0
-	@$(GOBIN)/mockgen -source=db/queries.go -destination=mock/queries.go -package=mock
+	@$(GOBIN)/mockgen -source=db/database.go -destination=mock/database.go -package=mock
 
 apidoc:
 	@GOBIN=$(GOBIN) go install github.com/spaceavocado/apidoc@v0.3.5

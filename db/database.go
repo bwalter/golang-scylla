@@ -4,14 +4,14 @@ import (
 	"bwa.com/hello/model"
 )
 
-type Queries interface {
+type Database interface {
 	CreateTablesIfNotExist() error
 	CloseSession()
 
-	VehicleQueries() VehicleQueries
+	VehicleDAO() VehicleDAO
 }
 
-type VehicleQueries interface {
+type VehicleDAO interface {
 	CreateVehicle(vehicle model.Vehicle) error
 	FindVehicle(vin string) (*model.Vehicle, error)
 }

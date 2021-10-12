@@ -17,8 +17,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var queries db.Queries
-var a app.App
+type Ctx struct {
+	db  db.Database
+	app app.App
+}
+
+var ctx Ctx
 
 func setUp(t *testing.T) {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
@@ -37,18 +41,18 @@ func setUp(t *testing.T) {
 	require.NoError(t, err)
 
 	// Start session
-	q, err := scylla.StartSessionAndCreateQueries(host, keyspace)
+	d, err := scylla.StartSessionAndCreateDatabase(host, keyspace)
 	require.NoError(t, err)
-	queries = q
+	ctx.db = d
 
 	// App
-	a = app.NewApp(queries)
+	ctx.app = app.NewApp(d)
 }
 
 func tearDown(t *testing.T) {
 	t.Cleanup(func() {
-		queries.CloseSession()
-		queries = nil
+		ctx.db.CloseSession()
+		ctx = Ctx{}
 	})
 }
 
@@ -66,7 +70,7 @@ func TestPostVehicle(t *testing.T) {
 	req, err := http.NewRequest("POST", "/vehicle", bytes.NewBuffer(vehicleJSON))
 	require.NoError(t, err)
 	rr := httptest.NewRecorder()
-	a.Router.ServeHTTP(rr, req)
+	ctx.app.Router.ServeHTTP(rr, req)
 
 	// Check code
 	require.Equal(t, 201, rr.Code)
@@ -78,7 +82,7 @@ func TestPostVehicle(t *testing.T) {
 	require.Equal(t, vehicle, responseVehicle)
 
 	// Check vehicle
-	vehiclePtr, err := queries.VehicleQueries().FindVehicle("vin1")
+	vehiclePtr, err := ctx.db.VehicleDAO().FindVehicle("vin1")
 	require.NoError(t, err)
 	require.NotNil(t, vehiclePtr)
 	require.Equal(t, vehicle, *vehiclePtr)
@@ -95,7 +99,7 @@ func TestGetVehicle(t *testing.T) {
 
 	// Insert vehicle
 	vehicle := model.Vehicle{Vin: "vin1", EngineType: "Combustion"}
-	err := queries.VehicleQueries().CreateVehicle(vehicle)
+	err := ctx.db.VehicleDAO().CreateVehicle(vehicle)
 	require.NoError(t, err)
 
 	// Send GET request => OK
@@ -113,6 +117,6 @@ func handleRequest(t *testing.T, method string, path string) httptest.ResponseRe
 	req, err := http.NewRequest("GET", "/vehicle?vin=vin1", nil)
 	require.NoError(t, err)
 	rr := httptest.NewRecorder()
-	a.Router.ServeHTTP(rr, req)
+	ctx.app.Router.ServeHTTP(rr, req)
 	return *rr
 }

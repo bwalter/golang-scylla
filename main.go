@@ -42,20 +42,20 @@ func main() {
 	host := fmt.Sprintf("%s:%d", opts.Addr, opts.Port)
 	keyspace := "hello"
 
-	// Scylla Keyspace
+	// Scylla keyspace
 	err = scylla.CreateKeyspace(host, keyspace, false)
 	if err != nil {
 		panic(err)
 	}
 
-	// Queries
-	queries, err := scylla.StartSessionAndCreateQueries(host, keyspace)
+	// Scylla database
+	db, err := scylla.StartSessionAndCreateDatabase(host, keyspace)
 	if err != nil {
 		panic(err)
 	}
 
 	// App
-	a := app.NewApp(queries)
+	a := app.NewApp(db)
 
 	// Server
 	srv := &http.Server{

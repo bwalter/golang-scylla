@@ -9,9 +9,9 @@ import (
 	"github.com/scylladb/gocqlx/v2"
 )
 
-type Queries struct {
-	session        *gocqlx.Session
-	vehicleQueries VehicleQueries
+type Database struct {
+	session    *gocqlx.Session
+	vehicleDAO VehicleDAO
 }
 
 func CreateKeyspace(host string, keyspace string, deleteExisting bool) error {
@@ -39,7 +39,7 @@ func CreateKeyspace(host string, keyspace string, deleteExisting bool) error {
 	return nil
 }
 
-func StartSessionAndCreateQueries(host string, keyspace string) (db.Queries, error) {
+func StartSessionAndCreateDatabase(host string, keyspace string) (db.Database, error) {
 	cluster := gocql.NewCluster(host)
 	cluster.Keyspace = keyspace
 	cluster.Timeout = 10 * time.Second
@@ -49,47 +49,47 @@ func StartSessionAndCreateQueries(host string, keyspace string) (db.Queries, err
 		return nil, err
 	}
 
-	queries, err := newQueries(session)
+	database, err := newDatabase(session)
 	if err != nil {
 		return nil, nil
 	}
 
-	if err := queries.CreateTablesIfNotExist(); err != nil {
+	if err := database.CreateTablesIfNotExist(); err != nil {
 		return nil, err
 	}
 
-	return queries, nil
+	return database, nil
 }
 
-func newQueries(session *gocql.Session) (db.Queries, error) {
+func newDatabase(session *gocql.Session) (db.Database, error) {
 	sessionx, err := gocqlx.WrapSession(session, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Queries{
-		session:        &sessionx,
-		vehicleQueries: newVehicleQueries(&sessionx),
+	return &Database{
+		session:    &sessionx,
+		vehicleDAO: newVehicleDAO(&sessionx),
 	}, nil
 }
 
-func (queries *Queries) CreateTablesIfNotExist() error {
-	if err := queries.session.ExecStmt("CREATE TYPE IF NOT EXISTS ev_data (battery_capacity_in_kwh int, soc_in_percent int)"); err != nil {
+func (db *Database) CreateTablesIfNotExist() error {
+	if err := db.session.ExecStmt("CREATE TYPE IF NOT EXISTS ev_data (battery_capacity_in_kwh int, soc_in_percent int)"); err != nil {
 		return err
 	}
 
 	cql := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (vin text primary key, engine_type text, ev_data ev_data)", vehicleMetadata.Name)
-	if err := queries.session.ExecStmt(cql); err != nil {
+	if err := db.session.ExecStmt(cql); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (queries *Queries) CloseSession() {
-	queries.session.Close()
+func (db *Database) CloseSession() {
+	db.session.Close()
 }
 
-func (queries *Queries) VehicleQueries() db.VehicleQueries {
-	return &queries.vehicleQueries
+func (db *Database) VehicleDAO() db.VehicleDAO {
+	return &db.vehicleDAO
 }

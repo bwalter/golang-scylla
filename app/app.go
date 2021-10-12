@@ -8,25 +8,25 @@ import (
 )
 
 type App struct {
-	Router  *mux.Router
-	queries db.Queries
+	Router   *mux.Router
+	Database db.Database
 }
 
 // Create app with a router for handling requests
-func NewApp(q db.Queries) App {
+func NewApp(db db.Database) App {
 	r := mux.NewRouter()
 
 	// Handle routing
-	routing.Route(r, q)
+	routing.Route(r, db)
 
 	a := App{
-		Router:  r,
-		queries: q,
+		Router:   r,
+		Database: db,
 	}
 
 	return a
 }
 
 func (a *App) CloseSession() {
-	a.queries.CloseSession()
+	a.Database.CloseSession()
 }

@@ -10,12 +10,12 @@ import (
 )
 
 type VehicleHandlers struct {
-	queries db.Queries
+	db db.Database
 }
 
-func NewVehicleHandlers(q db.Queries) VehicleHandlers {
+func NewVehicleHandlers(d db.Database) VehicleHandlers {
 	return VehicleHandlers{
-		queries: q,
+		db: d,
 	}
 
 }
@@ -29,7 +29,7 @@ func (h *VehicleHandlers) PostVehicle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.queries.VehicleQueries().CreateVehicle(vehicle); err != nil {
+	if err := h.db.VehicleDAO().CreateVehicle(vehicle); err != nil {
 		helpers.RespondWithError(w, 500, fmt.Sprintf("Could not create vehicle: %s", err))
 		return
 	}
@@ -46,7 +46,7 @@ func (h *VehicleHandlers) GetVehicle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	vin := vins[0]
-	vehicle, err := h.queries.VehicleQueries().FindVehicle(vin)
+	vehicle, err := h.db.VehicleDAO().FindVehicle(vin)
 	if err != nil {
 		helpers.RespondWithError(w, 500, fmt.Sprintf("Could not find vehicle: %s", err))
 	}

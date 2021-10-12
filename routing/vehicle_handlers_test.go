@@ -16,18 +16,18 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var mockVehicleQueries *mock.MockVehicleQueries
+var mockVehicleDAO *mock.MockVehicleDAO
 var handlers VehicleHandlers
 
 func setUp(t *testing.T) {
-	// Queries
+	// Database
 	ctrl := gomock.NewController(t)
-	mockQueries := mock.NewMockQueries(ctrl)
-	mockVehicleQueries = mock.NewMockVehicleQueries(ctrl)
-	mockQueries.EXPECT().VehicleQueries().DoAndReturn(func() db.VehicleQueries { return mockVehicleQueries }).AnyTimes()
+	mockDatabase := mock.NewMockDatabase(ctrl)
+	mockVehicleDAO = mock.NewMockVehicleDAO(ctrl)
+	mockDatabase.EXPECT().VehicleDAO().DoAndReturn(func() db.VehicleDAO { return mockVehicleDAO }).AnyTimes()
 
 	// Handlers
-	handlers = NewVehicleHandlers(mockQueries)
+	handlers = NewVehicleHandlers(mockDatabase)
 }
 
 func tearDown() {
@@ -44,7 +44,7 @@ func TestPostVehicle(t *testing.T) {
 	require.NoError(t, err)
 
 	// Expect DB CreateVehicle
-	mockVehicleQueries.EXPECT().CreateVehicle(gomock.Eq(vehicle)).Return(nil)
+	mockVehicleDAO.EXPECT().CreateVehicle(gomock.Eq(vehicle)).Return(nil)
 
 	// Send POST request
 	req, err := http.NewRequest("POST", "/vehicle", bytes.NewBuffer(vehicleJSON))
@@ -73,7 +73,7 @@ func TestPostVehicleInternalError(t *testing.T) {
 	require.NoError(t, err)
 
 	// Expect DB CreateVehicle
-	mockVehicleQueries.EXPECT().CreateVehicle(gomock.Eq(vehicle)).Return(errors.New("test CreateVehicle error"))
+	mockVehicleDAO.EXPECT().CreateVehicle(gomock.Eq(vehicle)).Return(errors.New("test CreateVehicle error"))
 
 	// Send POST request
 	req, err := http.NewRequest("POST", "/vehicle", bytes.NewBuffer(vehicleJSON))
@@ -98,7 +98,7 @@ func TestGetVehicle(t *testing.T) {
 
 	// Expect DB FindVehicle
 	vehicle := model.Vehicle{Vin: "vin1", EngineType: "Combustion", EvData: nil}
-	mockVehicleQueries.EXPECT().FindVehicle(gomock.Eq("vin1")).Return(&vehicle, nil)
+	mockVehicleDAO.EXPECT().FindVehicle(gomock.Eq("vin1")).Return(&vehicle, nil)
 
 	// Send GET request
 	req, err := http.NewRequest("GET", "/vehicle?vin=vin1", nil)
@@ -122,7 +122,7 @@ func TestGetVehicleNotFound(t *testing.T) {
 	defer tearDown()
 
 	// Expect DB FindVehicle
-	mockVehicleQueries.EXPECT().FindVehicle(gomock.Eq("wrong")).Return(nil, nil)
+	mockVehicleDAO.EXPECT().FindVehicle(gomock.Eq("wrong")).Return(nil, nil)
 
 	// Send GET request
 	req, err := http.NewRequest("GET", "/vehicle?vin=wrong", nil)
@@ -146,7 +146,7 @@ func TestGetVehicleInternalError(t *testing.T) {
 	defer tearDown()
 
 	// Expect DB FindVehicle
-	mockVehicleQueries.EXPECT().FindVehicle(gomock.Eq("vin1")).Return(nil, errors.New("test FindVehicle error"))
+	mockVehicleDAO.EXPECT().FindVehicle(gomock.Eq("vin1")).Return(nil, errors.New("test FindVehicle error"))
 
 	// Send GET request
 	req, err := http.NewRequest("GET", "/vehicle?vin=vin1", nil)

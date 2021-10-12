@@ -8,23 +8,23 @@ import (
 	"github.com/scylladb/gocqlx/v2"
 )
 
-type VehicleQueries struct {
+type VehicleDAO struct {
 	session *gocqlx.Session
 }
 
-func newVehicleQueries(sessionx *gocqlx.Session) VehicleQueries {
-	return VehicleQueries{
+func newVehicleDAO(sessionx *gocqlx.Session) VehicleDAO {
+	return VehicleDAO{
 		session: sessionx,
 	}
 }
 
-func (queries *VehicleQueries) CreateVehicle(vehicle model.Vehicle) error {
+func (dao *VehicleDAO) CreateVehicle(vehicle model.Vehicle) error {
 	scyllaVehicle, err := NewVehicle(vehicle)
 	if err != nil {
 		return err
 	}
 
-	applied, err := queries.session.Query(vehicleTable.InsertBuilder().Unique().ToCql()).BindStruct(scyllaVehicle).ExecCAS()
+	applied, err := dao.session.Query(vehicleTable.InsertBuilder().Unique().ToCql()).BindStruct(scyllaVehicle).ExecCAS()
 	if err != nil {
 		return err
 	}
@@ -36,11 +36,11 @@ func (queries *VehicleQueries) CreateVehicle(vehicle model.Vehicle) error {
 	return nil
 }
 
-func (queries *VehicleQueries) FindVehicle(vin string) (*model.Vehicle, error) {
+func (dao *VehicleDAO) FindVehicle(vin string) (*model.Vehicle, error) {
 	var findVehicle Vehicle
 	findVehicle.Vin = vin
 
-	q := queries.session.Query(vehicleTable.Get()).BindStruct(findVehicle)
+	q := dao.session.Query(vehicleTable.Get()).BindStruct(findVehicle)
 
 	var scyllaVehicle Vehicle
 	if err := q.GetRelease(&scyllaVehicle); err != nil {

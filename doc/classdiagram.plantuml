@@ -28,45 +28,45 @@ HttpServer -down-> Router
 App o-left-> Router
 App .down.> routing
 routing .> VehicleHandlers : route
-routing .> Router
+routing .[norank].> Router
 
 
-' Queries
+' Database
 
-interface Queries as "db.Queries" <<db>> {
+interface Database as "db.Database" <<db>> {
 	+ CreateTablesIfNotExist()
 	+ CloseSession()
-	+ VehicleQueries()
+	+ VehicleDAO()
 }
 
-interface VehicleQueries as "db.VehicleQueries" <<db>> {
+interface VehicleDAO as "db.VehicleDAO" <<db>> {
 	+ CreateVehicle()
 	+ FindVehicle()
 	+ DeleteVehicle()
 }
 
-interface UserQueries as "db.UserQueries" <<db>> {
+interface UserDAO as "db.UserDAO" <<db>> {
 	+ CreateUser()
 	+ FindUser()
 }
-remove UserQueries
+remove UserDAO
 
-App o-down-> Queries
-VehicleHandlers -down-> Queries
-Router -[hidden]right- Queries
-Queries o-> UserQueries
-Queries o-right-> VehicleQueries
-UserQueries -[hidden]down- VehicleQueries
-UserQueries -[hidden]down- VehicleQueries
+App o-down-> Database
+VehicleHandlers -down-> Database
+Router -[hidden]right- Database
+Database o-> UserDAO
+Database o-right-> VehicleDAO
+UserDAO -[hidden]down- VehicleDAO
+UserDAO -[hidden]down- VehicleDAO
 
 
 ' Scylla
 
-class ScyllaQueries as "scylla.Queries" <<db>>
+class ScyllaDatabase as "scylla.Database" <<db>>
 class ScyllaSession as "gocqlx.Session" <<external>>
 
-Queries <|-down- ScyllaQueries
-ScyllaQueries o-left-> ScyllaSession
+Database <|-down- ScyllaDatabase
+ScyllaDatabase o-left-> ScyllaSession
 
 
 ' Legend

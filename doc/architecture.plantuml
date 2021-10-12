@@ -8,7 +8,7 @@ database Scylla as "Scylla DB"
 
 User -right-( HTTP
 HTTP -right- HelloApp
-HelloApp -down-> Scylla : queries
+HelloApp -down-> Scylla : DAO
 
 note top of HTTP
 	Rest API:
