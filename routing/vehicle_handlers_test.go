@@ -141,7 +141,28 @@ func TestGetVehicleNotFound(t *testing.T) {
 }
 
 // GET vehicle => InternalError
-func TestGetVehicleInternalError(t *testing.T) {
+func TestGetVehicleNoQuery(t *testing.T) {
+	setUp(t)
+	defer tearDown()
+
+	// Send GET request
+	req, err := http.NewRequest("GET", "/vehicle", nil)
+	require.NoError(t, err)
+	rr := httptest.NewRecorder()
+	handlers.GetVehicle(rr, req)
+
+	// Check code
+	require.Equal(t, 500, rr.Code)
+
+	// Check body
+	var response map[string]string
+	err = helpers.DecodeJSONBody(rr.Body, &response)
+	require.NoError(t, err)
+	require.Equal(t, map[string]string{"error": "Could not find vehicle (missing 'vin' query parameter)"}, response)
+}
+
+// GET vehicle => InternalError
+func TestGetVehicleDbError(t *testing.T) {
 	setUp(t)
 	defer tearDown()
 
