@@ -5,9 +5,7 @@ import (
 )
 
 type Database interface {
-	CreateTablesIfNotExist() error
 	CloseSession()
-
 	VehicleDAO() VehicleDAO
 }
 

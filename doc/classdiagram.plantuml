@@ -60,13 +60,11 @@ UserDAO -[hidden]down- VehicleDAO
 UserDAO -[hidden]down- VehicleDAO
 
 
-' Scylla
+' MockDB
 
-class ScyllaDatabase as "scylla.Database" <<db>>
-class ScyllaSession as "gocqlx.Session" <<external>>
+class MockDB as "mockdb.Database" <<db>>
 
-Database <|-down- ScyllaDatabase
-ScyllaDatabase o-left-> ScyllaSession
+Database <|-down- MockDB
 
 
 ' Legend
@@ -80,7 +78,7 @@ legend right
 |= |= <color:#000000>Legend  \n|
 |<color:$appColor>■</color>| <color:#333333>app |
 |<color:$routingColor>■</color>| <color:#333333>routing |
-|<color:$dbColor>■</color>| <color:#333333>db / scylla |
+|<color:$dbColor>■</color>| <color:#333333>db / mockdb |
 |<color:$externalColor>■</color>| <color:#333333>external |
 endlegend
 

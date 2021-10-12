@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"bwa.com/hello/app"
-	"bwa.com/hello/db/scylla"
+	"bwa.com/hello/db/mockdb"
 	"github.com/jessevdk/go-flags"
 )
 
@@ -30,26 +30,14 @@ func main() {
 
 	// Command line args
 	var opts struct {
-		Addr string `short:"a" long:"addr" description:"hostname or address of the ScyllaDB node (e.g. 172.17.0.2)" default:"localhost"`
-		Port int    `short:"p" long:"port" description:"port of the ScyllaDB node (default: 9042)" default:"9042"`
 	}
 	_, err := flags.ParseArgs(&opts, os.Args[1:])
 	if err != nil {
 		os.Exit(1)
 	}
 
-	// Host and keyspace
-	host := fmt.Sprintf("%s:%d", opts.Addr, opts.Port)
-	keyspace := "hello"
-
-	// Scylla keyspace
-	err = scylla.CreateKeyspace(host, keyspace, false)
-	if err != nil {
-		panic(err)
-	}
-
-	// Scylla database
-	db, err := scylla.StartSessionAndCreateDatabase(host, keyspace)
+	// Mock database
+	db := mockdb.NewDatabase()
 	if err != nil {
 		panic(err)
 	}

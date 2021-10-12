@@ -34,10 +34,10 @@ check:
 
 test: unit-tests integration-tests
 
-unit-tests: build-mocks
+unit-tests: build build-mocks
 	@CGO_ENABLED="0" go test ./app -v
 	@CGO_ENABLED="0" go test ./routing -v
 
-integration-tests:
+integration-tests: build
 	@go test -cpu 1 -count=1 -v ./integration_tests
 

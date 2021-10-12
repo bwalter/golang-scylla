@@ -47,20 +47,6 @@ func (mr *MockDatabaseMockRecorder) CloseSession() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CloseSession", reflect.TypeOf((*MockDatabase)(nil).CloseSession))
 }
 
-// CreateTablesIfNotExist mocks base method.
-func (m *MockDatabase) CreateTablesIfNotExist() error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateTablesIfNotExist")
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CreateTablesIfNotExist indicates an expected call of CreateTablesIfNotExist.
-func (mr *MockDatabaseMockRecorder) CreateTablesIfNotExist() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTablesIfNotExist", reflect.TypeOf((*MockDatabase)(nil).CreateTablesIfNotExist))
-}
-
 // VehicleDAO mocks base method.
 func (m *MockDatabase) VehicleDAO() db.VehicleDAO {
 	m.ctrl.T.Helper()

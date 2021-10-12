@@ -6,12 +6,11 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"bwa.com/hello/app"
 	"bwa.com/hello/db"
-	"bwa.com/hello/db/scylla"
+	"bwa.com/hello/db/mockdb"
 	"bwa.com/hello/helpers"
 	"bwa.com/hello/model"
 	"github.com/stretchr/testify/require"
@@ -27,22 +26,8 @@ var ctx Ctx
 func setUp(t *testing.T) {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
-	// Scylla URI
-	uri := os.Getenv("SCYLLA_URI")
-	if uri == "" {
-		uri = "localhost"
-	}
-
-	host := uri + ":9042"
-	keyspace := "hello_test"
-
-	// Create test keyspace
-	err := scylla.CreateKeyspace(host, keyspace, true)
-	require.NoError(t, err)
-
 	// Start session
-	d, err := scylla.StartSessionAndCreateDatabase(host, keyspace)
-	require.NoError(t, err)
+	d := mockdb.NewDatabase()
 	ctx.db = d
 
 	// App

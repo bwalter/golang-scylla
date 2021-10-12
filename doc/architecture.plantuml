@@ -4,11 +4,11 @@ actor User
 interface HTTP
 
 component HelloApp
-database Scylla as "Scylla DB"
+database MockDB as "Mock DB"
 
 User -right-( HTTP
 HTTP -right- HelloApp
-HelloApp -down-> Scylla : DAO
+HelloApp -down-> MockDB : DAO
 
 note top of HTTP
 	Rest API:
